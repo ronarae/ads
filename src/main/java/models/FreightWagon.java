@@ -1,8 +1,9 @@
 package models;
 // TODO
-public class FreightWagon {
+public class FreightWagon extends Wagon {
 
     public FreightWagon(int wagonId, int maxWeight) {
+        super(wagonId);
         // TODO
     }
 

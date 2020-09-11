@@ -18,6 +18,10 @@ public class Wagon {
         this.id = wagonId;
     }
 
+    public Wagon() {
+
+    }
+
     public int getId() {
         return id;
     }
