@@ -91,10 +91,10 @@ public class Wagon {
      */
     public void attachTo(Wagon newPreviousWagon) {
         // TODO verify the exceptions WIP
-        if (previousWagon == newPreviousWagon) {
-            throw new RuntimeException("This wagon has already been appended to a wagon");
-        } else
-        throw new RuntimeException("Previous wagon has already got a wagon appended");
+     //   if (previousWagon == newPreviousWagon) {
+     //       throw new RuntimeException("This wagon has already been appended to a wagon");
+    //    } else
+     //   throw new RuntimeException("Previous wagon has already got a wagon appended");
         // TODO attach this wagon to its new predecessor (sustaining the invariant propositions).
     }
 
