@@ -1,6 +1,9 @@
 package models;
 
-public class Train {
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+public class Train implements Iterable<Wagon> {
     private String origin;
     private String destination;
     private Locomotive engine;
@@ -273,6 +276,30 @@ public class Train {
     public void reverse() {
         // TODO
 
+    }
+
+    @Override
+    public Iterator<Wagon> iterator() {
+        return new TrainIterator();
+    }
+
+    class TrainIterator implements Iterator<Wagon> {
+        Wagon index;
+
+        public TrainIterator() {
+            index = firstWagon;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return index != null;
+        }
+
+        @Override
+        public Wagon next() {
+            if (!hasNext()) throw new NoSuchElementException();
+            return index.getNextWagon();
+        }
     }
 
     // TODO
