@@ -1,6 +1,6 @@
 package models;
 
-public class Wagon {
+public abstract class Wagon {
     protected int id;                 // some unique ID of a Wagon
     private Wagon nextWagon;        // another wagon that is appended at the tail of this wagon
                                     // a.k.a. the successor of this wagon in a sequence
@@ -34,14 +34,6 @@ public class Wagon {
         return previousWagon;
     }
 
-    public void setNextWagon(Wagon nextWagon) {
-        this.nextWagon = nextWagon;
-    }
-
-    public void setPreviousWagon(Wagon previousWagon) {
-        this.previousWagon = previousWagon;
-    }
-
     /**
      * @return  whether this wagon has a wagon appended at the tail
      */
@@ -64,19 +56,29 @@ public class Wagon {
      * @return  the wagon found
      */
     public Wagon getLastWagonAttached() {
-        // TODO provide an iterative solution (without recursion)
+//        // TODO provide an iterative solution (without recursion)
+//
+//        Wagon nextWagon = getNextWagon();
+//
+//        if(nextWagon == null){
+//            return this;
+//        }
+//
+//        while (nextWagon.getNextWagon() != null){
+//            nextWagon = nextWagon.getNextWagon();
+//        }
+//
+//        return nextWagon;
 
-        Wagon nextWagon = getNextWagon();
 
-        if(nextWagon == null){
-            return this;
+        //create a local variable to store the current element
+        Wagon cur = this;
+        //while the current wagon has a next wagon go to the next wagon
+        while (cur.hasNextWagon()) {
+            cur = cur.getNextWagon();
         }
-
-        while (nextWagon.getNextWagon() != null){
-            nextWagon = nextWagon.getNextWagon();
-        }
-
-        return nextWagon;
+        //return the last wagon
+        return cur;
     }
 
     /**
@@ -84,20 +86,29 @@ public class Wagon {
      *          return 0 if no wagons have been appended.
      */
     public int getSequenceLength() {
-        // TODO provide a recursive solution
+//        // TODO provide a recursive solution
+//
+//        int trainLength;
+//        Wagon currentWagon = this;
+//
+//        if (currentWagon.getNextWagon() == null && currentWagon.getPreviousWagon() == null) return 1;
+//
+//        trainLength = 1;
+//        while (currentWagon.hasNextWagon()) {
+//            currentWagon = currentWagon.getNextWagon();
+//            trainLength++;
+//        }
+//
+//        return trainLength;
 
-        int trainLength;
-        Wagon currentWagon = this;
-
-        if (currentWagon.getNextWagon() == null && currentWagon.getPreviousWagon() == null) return 1;
-
-        trainLength = 1;
-        while (currentWagon.hasNextWagon()) {
-            currentWagon = currentWagon.getNextWagon();
-            trainLength++;
+        //check if the current wagon has a next wagon
+        if (hasNextWagon()) {
+            //call the same function on the next wagon (recursion) and add 1 to the return value
+            return getNextWagon().getSequenceLength() + 1;
+        } else {
+            //return one when there isn't another Wagon attached (stop criterium)
+            return 1;
         }
-
-        return trainLength;
     }
 
     /**
@@ -107,14 +118,23 @@ public class Wagon {
      * @throws RuntimeException if prevWagon already has got a wagon appended.
      */
     public void attachTo(Wagon newPreviousWagon) {
-        // TODO verify the exceptions WIP
-            newPreviousWagon.setNextWagon(this);
-            this.setPreviousWagon(newPreviousWagon);
-//            throw new RuntimeException("This wagon has already been appended to a wagon");
+//        // TODO verify the exceptions WIP
+//            newPreviousWagon.nextWagon = this;
+//            this.previousWagon = newPreviousWagon;
+////            throw new RuntimeException("This wagon has already been appended to a wagon");
+//
+//        // TODO attach this wagon to its new predecessor (sustaining the invariant propositions).
+////        throw new RuntimeException("Previous wagon has already got a wagon appended");
 
-        // TODO attach this wagon to its new predecessor (sustaining the invariant propositions).
-//        throw new RuntimeException("Previous wagon has already got a wagon appended");
-
+        //if there is a previous wagon the wagon is already attached throw a runtime exception
+        if (hasPreviousWagon()) throw new RuntimeException();
+        //else if there is already an wagon attached to wagon the wagon wants to be attached to throw a runtime exception
+        else if (newPreviousWagon.hasNextWagon()) throw new RuntimeException();
+        //attach the wagon the the new previous wagon
+        else {
+            newPreviousWagon.nextWagon = this;
+            previousWagon = newPreviousWagon;
+        }
     }
 
     /**
@@ -122,10 +142,21 @@ public class Wagon {
      * no action if this wagon has no previous wagon attached.
      */
     public void detachFromPrevious() {
-        // TODO detach this wagon from its predecessors (sustaining the invariant propositions).
-        if (this.hasPreviousWagon()) {
-            getPreviousWagon().setPreviousWagon(null);// to get previous wagon
-            setPreviousWagon(null); //remove to prev wagon
+//        // TODO detach this wagon from its predecessors (sustaining the invariant propositions).
+//        if (this.hasPreviousWagon()) {
+//            getPreviousWagon().setPreviousWagon(null);// to get previous wagon
+//            setPreviousWagon(null); //remove to prev wagon
+//        }
+
+        //check if the wagon has a wagon before itself
+        if (hasPreviousWagon()) {
+            //check if the currently appointed previous wagon points to this wagon
+            if (this == getPreviousWagon().getNextWagon()) {
+                //if the previous wagon point to this wagon remove pointerr
+                getPreviousWagon().nextWagon = null;
+            }
+            //set the pointer to the previous wagon to null
+            previousWagon = null;
         }
     }
 
@@ -134,9 +165,20 @@ public class Wagon {
      * no action if this wagon has no succeeding next wagon attached.
      */
     public void detachTail() {
-        // TODO detach this wagon from its successors (sustaining the invariant propositions).
-        getNextWagon().setPreviousWagon(null);
-        setNextWagon(null);
+//        // TODO detach this wagon from its successors (sustaining the invariant propositions).
+//        getNextWagon().setPreviousWagon(null);
+//        setNextWagon(null);
+
+        //check if the current wagon has a wagon attached to it
+        if (hasNextWagon()) {
+            //check if the wagon attached to the current wagon points back to the current wagon
+            if (this == getNextWagon().getPreviousWagon()) {
+                //set the pointer to the current wagon to null
+                getNextWagon().previousWagon = null;
+            }
+            //set the pointer to the next wagon to null
+            nextWagon = null;
+        }
 
     }
 
@@ -147,11 +189,18 @@ public class Wagon {
      * @param newPreviousWagon
      */
     public void reAttachTo(Wagon newPreviousWagon) {
-        // TODO detach any existing connections that will be rearranged
-        getPreviousWagon().setNextWagon(null);
-        newPreviousWagon.setNextWagon(this);
-        // TODO attach this wagon to its new predecessor (sustaining the invariant propositions).
-        setPreviousWagon(newPreviousWagon);
+//        // TODO detach any existing connections that will be rearranged
+//        getPreviousWagon().nextWagon = null;
+//        newPreviousWagon.nextWagon = this;
+//        // TODO attach this wagon to its new predecessor (sustaining the invariant propositions).
+//        previousWagon = newPreviousWagon;
+
+        //if the wagon is already attached to another wagon, detach the wagon
+        if (hasPreviousWagon()) detachFromPrevious();
+        //if the wagon this wagon wants to attach to, detach the tail of that wagon
+        if (newPreviousWagon.hasNextWagon()) newPreviousWagon.detachTail();
+        //attach the new wagon to the given tail
+        attachTo(newPreviousWagon);
     }
 
     /**
@@ -159,18 +208,25 @@ public class Wagon {
      * Reconnect the subsequence of its predecessors with the subsequence of its successors, if any.
      */
     public void removeFromSequence() {
-        // TODO
-        if (hasNextWagon() && hasPreviousWagon()) {
-            getNextWagon().reAttachTo(getPreviousWagon());
-            setNextWagon(null);
-            setPreviousWagon(null);
-        } else if (hasPreviousWagon() && !hasNextWagon()) {
-            getPreviousWagon().setNextWagon(null);
-            setPreviousWagon(null);
-        } else if (!hasPreviousWagon() && hasNextWagon()) {
-            getNextWagon().setPreviousWagon(null);
-            setNextWagon(null);
-        }
+//        // TODO
+//        if (hasNextWagon() && hasPreviousWagon()) {
+//            getNextWagon().reAttachTo(getPreviousWagon());
+//            nextWagon = null;
+//            previousWagon = null;
+//        } else if (hasPreviousWagon() && !hasNextWagon()) {
+//            getPreviousWagon().nextWagon = null;
+//            previousWagon = null;
+//        } else if (!hasPreviousWagon() && hasNextWagon()) {
+//            getNextWagon().previousWagon = null;
+//            nextWagon = null;
+//        }
+
+        //if the wagon has previous wagon and a next wagon, attach the next wagon to the previous wagon
+        if (getPreviousWagon() != null && getNextWagon() != null) getNextWagon().reAttachTo(getPreviousWagon());
+        //if the wagon has a previous wagon, detach from the previous wagon
+        if (hasPreviousWagon()) detachFromPrevious();
+        //if the wagon has a next wagon, detach the tail of the wagon
+        if (hasNextWagon()) detachTail();
     }
 
 
@@ -181,9 +237,53 @@ public class Wagon {
      * @return the new start Wagon of the reversed sequence (with is the former last Wagon of the original sequence)
      */
     public Wagon reverseSequence() {
-        // TODO provide a recursive implementation
+//        // TODO provide a recursive implementation
+//
+//        return null;
 
-        return null;
+        //create a pointer to the current wagon
+        Wagon cur = this;
+        //create a empty temporary pointer
+        Wagon temp;
+
+        //create a null pointer to the previous wagon
+        Wagon previous = null;
+        //check if the current wagon has a previous wagon
+        if (cur.hasPreviousWagon()) {
+            //set the previous pointer equals to the previous wagon
+            previous = cur.getPreviousWagon();
+            //detach the current wagon from the previous wagon
+            cur.detachFromPrevious();
+        }
+
+        //loop through until infinity or until the break criterium
+        while (true) {
+            //when the current wagon has a following wagon set the temp equals to the next wagon
+            if (cur.hasNextWagon()) temp = cur.getNextWagon();
+            //set the temp wagon to null (starts the stop criterium)
+            else temp = null;
+            //set the next wagon equals to the previouswagon
+            cur.nextWagon = cur.getPreviousWagon();
+            //set the previous wagon equals to the temp wagon
+            cur.previousWagon = temp;
+            //when the temp is unequal to null set the current wagon equals to the temp wagon
+            if (temp != null) cur = temp;
+            //when temp is equals null stop the loop
+            else break;
+        }
+
+        //when the previous wagon is null, attach the new start of the sequence to the last wagon
+        if (previous != null) {
+            cur.reAttachTo(previous);
+        }
+        //return the now first wagon of the reversed sequence
+        return cur;
+    }
+
+    @Override
+    public String toString() {
+        //return a string representation of this class
+        return String.format("[Wagon-%d]", getId());
     }
 
 

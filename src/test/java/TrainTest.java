@@ -217,14 +217,14 @@ public class TrainTest {
     public void T19_checkImplementationOfIterableInterface() {
         int sumIds = 0;
         // Uncomment the following lines once you have implemented the Iterable interface!
-//        for (Wagon w: trainWithoutWagons) {
-//            sumIds += w.getId();
-//        }
-//        assertEquals(0, sumIds);
-//
-//        for (Wagon w: freightTrain) {
-//            sumIds += w.getId();
-//        }
+        for (Wagon w: trainWithoutWagons) {
+            sumIds += w.getId();
+        }
+        assertEquals(0, sumIds);
+
+        for (Wagon w: freightTrain) {
+            sumIds += w.getId();
+        }
         assertEquals(27006, sumIds);
     }
 }

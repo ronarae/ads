@@ -1,7 +1,6 @@
 package models;
 
 import java.util.Iterator;
-import java.util.NoSuchElementException;
 
 public class Train implements Iterable<Wagon> {
     private String origin;
@@ -26,7 +25,6 @@ public class Train implements Iterable<Wagon> {
     }
 
     public boolean isPassengerTrain() {
-        System.out.println(firstWagon instanceof PassengerWagon);
         return firstWagon instanceof PassengerWagon;
     }
 
@@ -56,24 +54,16 @@ public class Train implements Iterable<Wagon> {
      * @return  the number of Wagons connected to the train
      */
     public int getNumberOfWagons() {
-        int counter = 0;
-        Wagon curWagon = firstWagon;
-        while (curWagon.hasNextWagon()) {
-            counter++;
-            curWagon = curWagon.getNextWagon();
-        }
-        return counter;
+        //if the firstwagon is not equals to null return the sequence length of the firstwagon else return 0
+        return (firstWagon != null) ? firstWagon.getSequenceLength() : 0;
     }
 
     /**
      * @return  the last wagon attached to the train
      */
     public Wagon getLastWagonAttached() {
-        Wagon curWagon = firstWagon;
-        while(curWagon.hasNextWagon()) {
-            curWagon = curWagon.getNextWagon();
-        }
-        return curWagon;
+        //if the firstwagon is not equals to null return the last wagon that is attached to the firstwagon else return null
+        return (firstWagon != null) ? firstWagon.getLastWagonAttached() : null;
     }
 
     /**
@@ -81,19 +71,17 @@ public class Train implements Iterable<Wagon> {
      *          (return 0 for a freight train)
      */
     public int getTotalNumberOfSeats() {
-        if (isFreightTrain()) {
-            return 0;
-        } else if (isPassengerTrain()){
-            int seatCounter = 0;
-            Wagon curWagon = firstWagon;
-            while(curWagon.hasNextWagon()) {
-                seatCounter += ((PassengerWagon)curWagon).getNumberOfSeats();
-                curWagon = curWagon.getNextWagon();
-            }
-            return seatCounter;
-        } else {
-            return 0;
+        //when instance of freighttrain return 0;
+        if (isFreightTrain()) return 0;
+        //instantiate counter and set value to 0
+        int counter = 0;
+        //loop through all the wagons in this instance with an enhanced for loop (for-each loop)
+        for (Wagon w : this) {
+            //add the number of seats of each wagon to the counter
+            counter += ((PassengerWagon)w).getNumberOfSeats();
         }
+        //return the end value of the counter
+        return counter;
     }
 
     /**
@@ -103,35 +91,41 @@ public class Train implements Iterable<Wagon> {
      *
      */
     public int getTotalMaxWeight() {
-        if (isPassengerTrain()) {
-            return 0;
-        } else if (isFreightTrain()) {
-            int maxWeightCounter = 0;
-            Wagon curWagon = firstWagon;
-            while(curWagon.hasNextWagon()) {
-                maxWeightCounter += ((FreightWagon)curWagon).getMaxWeight();
-                curWagon = curWagon.getNextWagon();
-            }
-            return maxWeightCounter;
-        } else {
-            return 0;
+        //when instanceof passengertrain return 0
+        if (isPassengerTrain()) return 0;
+        //instantiate counter and set value to 0
+        int counter = 0;
+        //loop through all the wagons in this instance with an enhanced for loop (for-each loop)
+        for (Wagon w : this) {
+            //add the number of maxweight of each wagon to the counter
+            counter += ((FreightWagon)w).getMaxWeight();
         }
+        //return the end value of the counter
+        return counter;
     }
 
-     /**
+    /**
      * Finds the wagon at the given position (starting at 1 for the first wagon of the train)
      * @param position
      * @return  the wagon found at the given position
      *          (return null if the position is not valid for this train)
      */
     public Wagon findWagonAtPosition(int position) {
-        Wagon curWagon = firstWagon;
-        while(position > 0) {
-            if (!curWagon.hasNextWagon()) return null;
-            curWagon = curWagon.getNextWagon();
+        //check if position 0, when the case return null because of an invalid position
+        if (position == 0) return null;
+        //set a pointer to the current wagon equals to the firstwagon
+        Wagon cur = firstWagon;
+        //loop while position is greater than 1
+        while (position > 1) {
+            //return null when the current wagon doesn't have any following wagons
+            if (!cur.hasNextWagon()) return null;
+            //set the current wagon equals to the next wagon
+            cur = cur.getNextWagon();
+            //decrement the position by 1
             position--;
         }
-        return curWagon;
+        //return the last selected wagon
+        return cur;
     }
 
     /**
@@ -141,11 +135,19 @@ public class Train implements Iterable<Wagon> {
      *          (return null if no wagon was found with the given wagonId)
      */
     public Wagon findWagonById(int wagonId) {
-        Wagon curWagon = firstWagon;
-        while(curWagon.hasNextWagon()) {
-            if (curWagon.getId() == wagonId) return curWagon;
+        //return null when there isn't a wagon on this train
+        if (firstWagon == null) return null;
+        //set a pointer for the current wagon to the firstwagon
+        Wagon cur = firstWagon;
+        //keep looping while the id the of current wagon is not equals to the given wagonid
+        while (cur.getId() != wagonId) {
+            //return null when there isn't another wagon to the list (this means that no wagon was found)
+            if (!cur.hasNextWagon()) return null;
+            //set the pointer of the current wagon to the next wagon
+            cur = cur.getNextWagon();
         }
-        return null;
+        //return the last selected wagon
+        return cur;
     }
 
     /**
@@ -156,17 +158,22 @@ public class Train implements Iterable<Wagon> {
      * @return
      */
     public boolean canAttach(Wagon sequence) {
-        //TODO
-//        int maxWagons = engine.getMaxWagons();
-//        int totalWagons = getNumberOfWagons();
-//        if (totalWagons > maxWagons) return false;
-//        boolean allOfTheSameType = true;
-//
-//        while(sequence.hasNextWagon()) {
-//
-//        }
-//        if (!allOfTheSameType) return false;
-        return true;
+        //give the boolean canattach a default value of true;
+        boolean canAttach = true;
+        //check if there is a first wagon, if there is a firstwagon immediately return true;
+        if (firstWagon != null) {
+            //check if the sequence lenght of the current sequence together with the length of the given sequence is not to much for the engine to handle
+            if ((firstWagon.getSequenceLength() + sequence.getSequenceLength()) > engine.getMaxWagons())
+                canAttach = false;
+            //check the id of the firstwagon is not the same of the id of the given sequence
+            else if (firstWagon.getId() == sequence.getId()) canAttach = false;
+            //check if the current train is a passengtrain and the sequence is of type freighttrain
+            else if (isPassengerTrain() && sequence instanceof FreightWagon) canAttach = false;
+            //check if the current train is a freighttrain and the sequence is of type passengertrain
+            else if (isFreightTrain() && sequence instanceof PassengerWagon) canAttach = false;
+        }
+        //return if the sequence can attach to the current sequence
+        return canAttach;
     }
 
     /**
@@ -177,17 +184,20 @@ public class Train implements Iterable<Wagon> {
      * @return  whether the attachment could be completed successfully
      */
     public boolean attachToRear(Wagon sequence) {
+        //check if the given sequence can attach to the current sequence
+        if (!canAttach(sequence)) return false;
         try {
+            //when there isn't a sequence yet set the sequence to the given sequence else attach the sequence to the current sequence
             if (firstWagon != null) {
                 sequence.attachTo(firstWagon.getLastWagonAttached());
             } else {
-                firstWagon = sequence;
+                setFirstWagon(sequence);
             }
             return true;
-        } catch(Exception e) {
-            e.printStackTrace();
+            //catch a runtime exception when necessary
+        } catch (RuntimeException e) {
+            return false;
         }
-        return false;
     }
 
     /**
@@ -198,15 +208,18 @@ public class Train implements Iterable<Wagon> {
      * @return  whether the insertion could be completed successfully
      */
     public boolean insertAtFront(Wagon sequence) {
+        //check if the given sequence can attach to the current sequence
+        if (!canAttach(sequence)) return false;
         try {
-            Wagon oldFirstWagon = firstWagon;
-            firstWagon = sequence;
-            firstWagon.setNextWagon(oldFirstWagon);
-        } catch (Exception e) {
-            e.printStackTrace();
+            //when the firstwagon is not null attach the current sequence to the given sequence
+            if (firstWagon != null) firstWagon.attachTo(sequence.getLastWagonAttached());
+            //set the current sequence equal to the given sequence
+            setFirstWagon(sequence);
+            return true;
+            //catch a runtime exception
+        } catch (RuntimeException e) {
+            return false;
         }
-
-        return false;
     }
 
     /**
@@ -218,20 +231,24 @@ public class Train implements Iterable<Wagon> {
      * @return  whether the insertion could be completed successfully
      */
     public boolean insertAtPosition(int position, Wagon sequence) {
+        //check if the given sequence can attach to the current sequence
+        if (!canAttach(sequence)) return false;
+        //when to position to attach to is the first position, chang function call to insertatfront
+        if (position == 1) return insertAtFront(sequence);
         try {
-            Wagon wagonAtPosition = findWagonAtPosition(position);
-            Wagon prevWagon = wagonAtPosition.getPreviousWagon();
-            Wagon nextWagon = wagonAtPosition.getNextWagon();
-            prevWagon.setNextWagon(sequence);
-            Wagon lastWagonOfSequence = sequence.getLastWagonAttached();
-            nextWagon.setPreviousWagon(wagonAtPosition);
-            wagonAtPosition.setPreviousWagon(lastWagonOfSequence);
-            lastWagonOfSequence.setNextWagon(wagonAtPosition);
+            //get the wagon at the gvien position
+            Wagon atPosition = findWagonAtPosition(position);
+            //detach the wagon at the given position from the previous wagons
+            atPosition.detachFromPrevious();
+            //attach the sequence to the last wagon attached to the sequence
+            sequence.attachTo(getLastWagonAttached());
+            //attach the wagon that was at the given position to the last wagon attached
+            atPosition.attachTo(getLastWagonAttached());
             return true;
-        } catch (Exception e) {
-            e.printStackTrace();
+            //catch a runtime exception when necessary
+        } catch (RuntimeException e) {
+            return false;
         }
-        return false;
     }
 
     /**
@@ -245,10 +262,15 @@ public class Train implements Iterable<Wagon> {
      * @return  whether the move could be completed successfully
      */
     public boolean moveOneWagon(int wagonId, Train toTrain) {
-        // TODO
-
-        return false;
-     }
+        //find the wagon with the given id
+        Wagon w = findWagonById(wagonId);
+        //check if the wagon was found and the found wagon can attach to the given train else return false
+        if (w == null || !toTrain.canAttach(w)) return false;
+        //remove the found wagon from the current train
+        w.removeFromSequence();
+        //return if the wagon was succesfully attached to the given train
+        return toTrain.attachToRear(w);
+    }
 
     /**
      * Tries to split this train and move the complete sequence of wagons from the given position
@@ -261,9 +283,14 @@ public class Train implements Iterable<Wagon> {
      * @return  whether the move could be completed successfully
      */
     public boolean splitAtPosition(int position, Train toTrain) {
-        // TODO
-
-        return false;
+        //find the wagon at the given position
+        Wagon w = findWagonAtPosition(position);
+        //check if a wagon was found and the wagon that was found can attach to the given train else return false
+        if (w == null || !toTrain.canAttach(w)) return false;
+        //detach the found wagon from the current train
+        w.detachFromPrevious();
+        //return if the sequnce was succesfully addded to the given train
+        return toTrain.attachToRear(w);
     }
 
     /**
@@ -274,33 +301,60 @@ public class Train implements Iterable<Wagon> {
      * (No change if the train has no wagons or only one wagon)
      */
     public void reverse() {
-        // TODO
-
+        //check if there is a firstwagon and that the firstwagon has a nextwagon else stop the function
+        if (firstWagon == null || !firstWagon.hasNextWagon()) return;
+        //set the firstwagon equals to the reverse of the sequence
+        setFirstWagon(getFirstWagon().reverseSequence());
     }
 
     @Override
     public Iterator<Wagon> iterator() {
-        return new TrainIterator();
+        //create a new instance of a iterator
+        return new Iterator<>() {
+            //create a pointer to current wagon and set it equals to the firstwagon
+            Wagon cur = firstWagon;
+
+            @Override
+            public boolean hasNext() {
+                //check if the current wagon exists
+                return cur != null;
+            }
+
+            @Override
+            public Wagon next() {
+                //set the local var prev equals to the current wagon
+                Wagon prev = cur;
+                //set the curent wagon equals to the next wagon
+                cur = cur.getNextWagon();
+                //return the prev wagon
+                return prev;
+            }
+        };
     }
 
-    class TrainIterator implements Iterator<Wagon> {
-        Wagon index;
-
-        public TrainIterator() {
-            index = firstWagon;
-        }
-
-        @Override
-        public boolean hasNext() {
-            return index != null;
-        }
-
-        @Override
-        public Wagon next() {
-            if (!hasNext()) throw new NoSuchElementException();
-            return index.getNextWagon();
-        }
+    @Override
+    public String toString() {
+        //instantiate a new stringbuilder
+        StringBuilder sb = new StringBuilder();
+        //append the toString method of the locomotive (engine) of the current instance
+        sb.append(getEngine());
+        //loop through every wagon (another type of foreach loop) and append every toString method of each wagon to the output result
+        forEach((element) -> {
+            sb.append(element);
+        });
+        //append the word with with spaces to the final string
+        sb.append(" with ");
+        //append the total number of wagons to the string
+        sb.append(getNumberOfWagons());
+        //add another little bit of text to the string
+        sb.append(" wagons from ");
+        //add the location tha the train is traveling from to the string
+        sb.append(origin);
+        //add another word to the string
+        sb.append(" to ");
+        //add the final destination to the string
+        sb.append(destination);
+        //return the final string
+        return sb.toString();
     }
-
-    // TODO
 }
