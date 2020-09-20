@@ -64,13 +64,17 @@ public class Wagon {
     public Wagon getLastWagonAttached() {
         // TODO provide an iterative solution (without recursion)
 
-        Wagon currentWagon = this;
+        Wagon nextWagon = getNextWagon();
 
-        while (currentWagon.hasNextWagon()){
-            currentWagon = currentWagon.nextWagon;
+        if(nextWagon == null){
+            return this;
         }
 
-        return currentWagon;
+        while (nextWagon.getNextWagon() != null){
+            nextWagon = nextWagon.getNextWagon();
+        }
+
+        return nextWagon;
     }
 
     /**
@@ -91,11 +95,13 @@ public class Wagon {
      */
     public void attachTo(Wagon newPreviousWagon) {
         // TODO verify the exceptions WIP
-     //   if (previousWagon == newPreviousWagon) {
-     //       throw new RuntimeException("This wagon has already been appended to a wagon");
-    //    } else
-     //   throw new RuntimeException("Previous wagon has already got a wagon appended");
+            newPreviousWagon.setNextWagon(this);
+            this.setPreviousWagon(newPreviousWagon);
+//            throw new RuntimeException("This wagon has already been appended to a wagon");
+//        throw new RuntimeException("Previous wagon has already got a wagon appended");
         // TODO attach this wagon to its new predecessor (sustaining the invariant propositions).
+
+
     }
 
     /**
@@ -104,7 +110,10 @@ public class Wagon {
      */
     public void detachFromPrevious() {
         // TODO detach this wagon from its predecessors (sustaining the invariant propositions).
-
+        if (this.hasPreviousWagon()) {
+            getPreviousWagon().setPreviousWagon(null);// to get previous wagon
+            setPreviousWagon(null); //remove to prev wagon
+        }
     }
 
     /**
@@ -113,6 +122,8 @@ public class Wagon {
      */
     public void detachTail() {
         // TODO detach this wagon from its successors (sustaining the invariant propositions).
+        getNextWagon().setPreviousWagon(null);
+        setNextWagon(null);
 
     }
 
@@ -124,9 +135,10 @@ public class Wagon {
      */
     public void reAttachTo(Wagon newPreviousWagon) {
         // TODO detach any existing connections that will be rearranged
-
+        getPreviousWagon().setNextWagon(null);
+        newPreviousWagon.setNextWagon(this);
         // TODO attach this wagon to its new predecessor (sustaining the invariant propositions).
-
+        setPreviousWagon(newPreviousWagon);
     }
 
     /**
