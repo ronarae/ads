@@ -46,6 +46,7 @@ public class Wagon {
      * @return  whether this wagon has a wagon appended at the tail
      */
     public boolean hasNextWagon() {
+
         return nextWagon != null;
     }
 
@@ -53,6 +54,7 @@ public class Wagon {
      * @return  whether this wagon has a wagon prepended at the front
      */
     public boolean hasPreviousWagon() {
+
         return previousWagon != null;
     }
 
@@ -84,7 +86,18 @@ public class Wagon {
     public int getSequenceLength() {
         // TODO provide a recursive solution
 
-        return 1;
+        int trainLength;
+        Wagon currentWagon = this;
+
+        if (currentWagon.getNextWagon() == null && currentWagon.getPreviousWagon() == null) return 1;
+
+        trainLength = 1;
+        while (currentWagon.hasNextWagon()) {
+            currentWagon = currentWagon.getNextWagon();
+            trainLength++;
+        }
+
+        return trainLength;
     }
 
     /**
@@ -98,9 +111,9 @@ public class Wagon {
             newPreviousWagon.setNextWagon(this);
             this.setPreviousWagon(newPreviousWagon);
 //            throw new RuntimeException("This wagon has already been appended to a wagon");
-//        throw new RuntimeException("Previous wagon has already got a wagon appended");
-        // TODO attach this wagon to its new predecessor (sustaining the invariant propositions).
 
+        // TODO attach this wagon to its new predecessor (sustaining the invariant propositions).
+//        throw new RuntimeException("Previous wagon has already got a wagon appended");
 
     }
 
@@ -147,7 +160,17 @@ public class Wagon {
      */
     public void removeFromSequence() {
         // TODO
-
+        if (hasNextWagon() && hasPreviousWagon()) {
+            getNextWagon().reAttachTo(getPreviousWagon());
+            setNextWagon(null);
+            setPreviousWagon(null);
+        } else if (hasPreviousWagon() && !hasNextWagon()) {
+            getPreviousWagon().setNextWagon(null);
+            setPreviousWagon(null);
+        } else if (!hasPreviousWagon() && hasNextWagon()) {
+            getNextWagon().setPreviousWagon(null);
+            setNextWagon(null);
+        }
     }
 
 
