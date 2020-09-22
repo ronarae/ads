@@ -38,7 +38,6 @@ public abstract class Wagon {
      * @return  whether this wagon has a wagon appended at the tail
      */
     public boolean hasNextWagon() {
-
         return nextWagon != null;
     }
 
@@ -46,7 +45,6 @@ public abstract class Wagon {
      * @return  whether this wagon has a wagon prepended at the front
      */
     public boolean hasPreviousWagon() {
-
         return previousWagon != null;
     }
 
@@ -56,21 +54,6 @@ public abstract class Wagon {
      * @return  the wagon found
      */
     public Wagon getLastWagonAttached() {
-//        // TODO provide an iterative solution (without recursion)
-//
-//        Wagon nextWagon = getNextWagon();
-//
-//        if(nextWagon == null){
-//            return this;
-//        }
-//
-//        while (nextWagon.getNextWagon() != null){
-//            nextWagon = nextWagon.getNextWagon();
-//        }
-//
-//        return nextWagon;
-
-
         //create a local variable to store the current element
         Wagon cur = this;
         //while the current wagon has a next wagon go to the next wagon
@@ -86,21 +69,6 @@ public abstract class Wagon {
      *          return 0 if no wagons have been appended.
      */
     public int getSequenceLength() {
-//        // TODO provide a recursive solution
-//
-//        int trainLength;
-//        Wagon currentWagon = this;
-//
-//        if (currentWagon.getNextWagon() == null && currentWagon.getPreviousWagon() == null) return 1;
-//
-//        trainLength = 1;
-//        while (currentWagon.hasNextWagon()) {
-//            currentWagon = currentWagon.getNextWagon();
-//            trainLength++;
-//        }
-//
-//        return trainLength;
-
         //check if the current wagon has a next wagon
         if (hasNextWagon()) {
             //call the same function on the next wagon (recursion) and add 1 to the return value
@@ -118,14 +86,6 @@ public abstract class Wagon {
      * @throws RuntimeException if prevWagon already has got a wagon appended.
      */
     public void attachTo(Wagon newPreviousWagon) {
-//        // TODO verify the exceptions WIP
-//            newPreviousWagon.nextWagon = this;
-//            this.previousWagon = newPreviousWagon;
-////            throw new RuntimeException("This wagon has already been appended to a wagon");
-//
-//        // TODO attach this wagon to its new predecessor (sustaining the invariant propositions).
-////        throw new RuntimeException("Previous wagon has already got a wagon appended");
-
         //if there is a previous wagon the wagon is already attached throw a runtime exception
         if (hasPreviousWagon()) throw new RuntimeException();
         //else if there is already an wagon attached to wagon the wagon wants to be attached to throw a runtime exception
@@ -142,12 +102,6 @@ public abstract class Wagon {
      * no action if this wagon has no previous wagon attached.
      */
     public void detachFromPrevious() {
-//        // TODO detach this wagon from its predecessors (sustaining the invariant propositions).
-//        if (this.hasPreviousWagon()) {
-//            getPreviousWagon().setPreviousWagon(null);// to get previous wagon
-//            setPreviousWagon(null); //remove to prev wagon
-//        }
-
         //check if the wagon has a wagon before itself
         if (hasPreviousWagon()) {
             //check if the currently appointed previous wagon points to this wagon
@@ -165,10 +119,6 @@ public abstract class Wagon {
      * no action if this wagon has no succeeding next wagon attached.
      */
     public void detachTail() {
-//        // TODO detach this wagon from its successors (sustaining the invariant propositions).
-//        getNextWagon().setPreviousWagon(null);
-//        setNextWagon(null);
-
         //check if the current wagon has a wagon attached to it
         if (hasNextWagon()) {
             //check if the wagon attached to the current wagon points back to the current wagon
@@ -189,12 +139,6 @@ public abstract class Wagon {
      * @param newPreviousWagon
      */
     public void reAttachTo(Wagon newPreviousWagon) {
-//        // TODO detach any existing connections that will be rearranged
-//        getPreviousWagon().nextWagon = null;
-//        newPreviousWagon.nextWagon = this;
-//        // TODO attach this wagon to its new predecessor (sustaining the invariant propositions).
-//        previousWagon = newPreviousWagon;
-
         //if the wagon is already attached to another wagon, detach the wagon
         if (hasPreviousWagon()) detachFromPrevious();
         //if the wagon this wagon wants to attach to, detach the tail of that wagon
@@ -208,19 +152,6 @@ public abstract class Wagon {
      * Reconnect the subsequence of its predecessors with the subsequence of its successors, if any.
      */
     public void removeFromSequence() {
-//        // TODO
-//        if (hasNextWagon() && hasPreviousWagon()) {
-//            getNextWagon().reAttachTo(getPreviousWagon());
-//            nextWagon = null;
-//            previousWagon = null;
-//        } else if (hasPreviousWagon() && !hasNextWagon()) {
-//            getPreviousWagon().nextWagon = null;
-//            previousWagon = null;
-//        } else if (!hasPreviousWagon() && hasNextWagon()) {
-//            getNextWagon().previousWagon = null;
-//            nextWagon = null;
-//        }
-
         //if the wagon has previous wagon and a next wagon, attach the next wagon to the previous wagon
         if (getPreviousWagon() != null && getNextWagon() != null) getNextWagon().reAttachTo(getPreviousWagon());
         //if the wagon has a previous wagon, detach from the previous wagon
@@ -237,10 +168,6 @@ public abstract class Wagon {
      * @return the new start Wagon of the reversed sequence (with is the former last Wagon of the original sequence)
      */
     public Wagon reverseSequence() {
-//        // TODO provide a recursive implementation
-//
-//        return null;
-
         //create a pointer to the current wagon
         Wagon cur = this;
         //create a empty temporary pointer
@@ -285,7 +212,4 @@ public abstract class Wagon {
         //return a string representation of this class
         return String.format("[Wagon-%d]", getId());
     }
-
-
-    // TODO
 }

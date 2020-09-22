@@ -167,7 +167,7 @@ public class Train implements Iterable<Wagon> {
                 canAttach = false;
             //check the id of the firstwagon is not the same of the id of the given sequence
             else if (firstWagon.getId() == sequence.getId()) canAttach = false;
-            //check if the current train is a passengtrain and the sequence is of type freighttrain
+            //check if the current train is a passengertrain and the sequence is of type freighttrain
             else if (isPassengerTrain() && sequence instanceof FreightWagon) canAttach = false;
             //check if the current train is a freighttrain and the sequence is of type passengertrain
             else if (isFreightTrain() && sequence instanceof PassengerWagon) canAttach = false;
@@ -304,7 +304,7 @@ public class Train implements Iterable<Wagon> {
         //check if there is a firstwagon and that the firstwagon has a nextwagon else stop the function
         if (firstWagon == null || !firstWagon.hasNextWagon()) return;
         //set the firstwagon equals to the reverse of the sequence
-        setFirstWagon(getFirstWagon().reverseSequence());
+        setFirstWagon(firstWagon.reverseSequence());
     }
 
     @Override
@@ -339,8 +339,8 @@ public class Train implements Iterable<Wagon> {
         //append the toString method of the locomotive (engine) of the current instance
         sb.append(getEngine());
         //loop through every wagon (another type of foreach loop) and append every toString method of each wagon to the output result
-        forEach((element) -> {
-            sb.append(element);
+        forEach((wagon) -> {
+            sb.append(wagon);
         });
         //append the word with with spaces to the final string
         sb.append(" with ");
