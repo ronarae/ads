@@ -87,7 +87,7 @@ public class WagonTest {
     }
 
     @Test
-    public void T03_TheFristWagonOfFourWagonsShouldReturnTheLastWagonOfTheSequence() {
+    public void T03_TheFirstWagonOfFourWagonsShouldReturnTheLastWagonOfTheSequence() {
         passengerWagon2.attachTo(passengerWagon1);
         passengerWagon3.attachTo(passengerWagon2);
         passengerWagon4.attachTo(passengerWagon3);
@@ -315,5 +315,27 @@ public class WagonTest {
 
         assertEquals(passengerWagon1, passengerWagon2.getPreviousWagon());
         assertEquals(passengerWagon4, passengerWagon2.getNextWagon());
+    }
+
+    @Test
+    public void T06_AttachToHasPreviousThrowsException() {
+        try {
+            passengerWagon2.attachTo(passengerWagon1);
+            passengerWagon3.attachTo(passengerWagon1);
+            fail("No exception thrown");
+        } catch(Exception e) {
+            assertEquals(e.getClass().getSimpleName(), "RuntimeException");
+        }
+    }
+
+    @Test
+    public void T06_AttachToAlreadyConnectedThrowsException() {
+        try {
+            passengerWagon3.attachTo(passengerWagon1);
+            passengerWagon3.attachTo(passengerWagon2);
+            fail("No exception thrown");
+        } catch (Exception e) {
+            assertEquals(e.getClass().getSimpleName(), "RuntimeException");
+        }
     }
 }
