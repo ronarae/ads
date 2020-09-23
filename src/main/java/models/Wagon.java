@@ -129,7 +129,6 @@ public abstract class Wagon {
             //set the pointer to the next wagon to null
             nextWagon = null;
         }
-
     }
 
     /**
@@ -168,43 +167,68 @@ public abstract class Wagon {
      * @return the new start Wagon of the reversed sequence (with is the former last Wagon of the original sequence)
      */
     public Wagon reverseSequence() {
-        //create a pointer to the current wagon
-        Wagon cur = this;
-        //create a empty temporary pointer
+        //a boolean where it is saved which element is that one that the method called for the first time
+        boolean wagonToStartTheReverseSequenceOn = false;
+        //if the first wagon was connected to another wagon save that wagon to this variable
+        Wagon wagonBeforeTheReverseSequence = null;
+        //make the variable result available in the whole function
+        Wagon result;
+        //make the variable temp available in the whole method
         Wagon temp;
 
-        //create a null pointer to the previous wagon
-        Wagon previous = null;
-        //check if the current wagon has a previous wagon
-        if (cur.hasPreviousWagon()) {
-            //set the previous pointer equals to the previous wagon
-            previous = cur.getPreviousWagon();
-            //detach the current wagon from the previous wagon
-            cur.detachFromPrevious();
+        //check if the current active wagon has a wagon before itself
+        if (hasPreviousWagon()) {
+            //check if this wagon has a following wagon
+            if (!hasNextWagon()) {
+                //if this is not the case set the next wagon equals to the previous wagon
+                nextWagon = getPreviousWagon();
+                //remove the value of the previous wagon
+                previousWagon = null;
+                //return this instance, there are no more wagons, so this is the last wagon of the sequence
+                return this;
+            }
+            //check for a representation invariant propositions if the proposition is correct it is the first call to this method
+            if (getPreviousWagon().getNextWagon() == this) {
+                //set the previous wagon equals to the previous wagon
+                wagonBeforeTheReverseSequence = getPreviousWagon();
+                //make sure the method knows this is the first caller of the method
+                wagonToStartTheReverseSequenceOn = true;
+            }
+            //create a temp variable to store the next wagon
+            temp = getNextWagon();
+            //the next wagon is set equals to the previous wagon
+            nextWagon = getPreviousWagon();
+            //the previous wagon is set to the temp variable which has the next wagon stored
+            previousWagon = temp;
+            //call the method again on the next wagon (recursion)
+            result = temp.reverseSequence();
+        }
+        //the current wagon doesn't have a wagon before itself, this means that the wagon is the first wagon
+        else {
+            //if this wagon doesn't have a following wagon, return this wagon, you cannot reverse something with the length of one
+            if (!hasNextWagon()) return this;
+            //make sure the method knows this is a first call of the method
+            wagonToStartTheReverseSequenceOn = true;
+            //set the temp and the previous wagon variable equals to the next wagon
+            temp = previousWagon = getNextWagon();
+            //the first wagon will be the last wagon so the next wagon must be set to null
+            nextWagon = null;
+            //call the function again on the wagon that was the following wagon
+            result = temp.reverseSequence();
         }
 
-        //loop through until infinity or until the break criterium
-        while (true) {
-            //when the current wagon has a following wagon set the temp equals to the next wagon
-            if (cur.hasNextWagon()) temp = cur.getNextWagon();
-            //set the temp wagon to null (starts the stop criterium)
-            else temp = null;
-            //set the next wagon equals to the previouswagon
-            cur.nextWagon = cur.getPreviousWagon();
-            //set the previous wagon equals to the temp wagon
-            cur.previousWagon = temp;
-            //when the temp is unequal to null set the current wagon equals to the temp wagon
-            if (temp != null) cur = temp;
-            //when temp is equals null stop the loop
-            else break;
+        //check if this wagon is the first wagon that called the method
+        if (wagonToStartTheReverseSequenceOn) {
+            //set the next wagon to null, the first will be the last (Matthew 20:16) so there is no following wagon
+            nextWagon = null;
+            //if this reverse call is a partial reverse run the code in the if block
+            if (wagonBeforeTheReverseSequence != null) {
+                //reattach the now first wagon of the sequence to the sequence it was attached to.
+                result.reAttachTo(wagonBeforeTheReverseSequence);
+            }
         }
-
-        //when the previous wagon is null, attach the new start of the sequence to the last wagon
-        if (previous != null) {
-            cur.reAttachTo(previous);
-        }
-        //return the now first wagon of the reversed sequence
-        return cur;
+        //return the new first wagon in the sequence
+        return result;
     }
 
     @Override
