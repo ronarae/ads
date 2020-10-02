@@ -13,8 +13,15 @@ import java.util.*;
 public class Archer {
     public final static int MAX_ARROWS = 3;
     public final static int MAX_ROUNDS = 10;
-    private static Random randomizer = new Random();
-    private int id; // Once assigned a value this attribute is not allowed to change.
+    private static final Random randomizer = new Random();
+    private static int lastAssignedId = 135787; //this attribute was added to keep track of the archer ids
+    private final int id; // Once assigned a value this attribute is not allowed to change.
+
+    //these attributes were added to store the first and the last name of the archer in the instance
+    private final String firstName, lastName;
+
+    //this attribute was added to keep track of the total score
+    private final int[] totalScore;
 
     /**
      * Constructs a new instance of Archer and assigns a unique ID to the instance. The ID is not allowed to ever
@@ -26,6 +33,12 @@ public class Archer {
      * @param lastName the archers surname.
      */
     protected Archer(String firstName, String lastName) {
+        this.id = ++lastAssignedId;
+
+        this.firstName = firstName;
+        this.lastName = lastName;
+
+        totalScore = new int[MAX_ROUNDS * MAX_ARROWS];
     }
 
     /**
@@ -36,10 +49,18 @@ public class Archer {
      * @param points the points shot during the round.
      */
     public void registerScoreForRound(int round, int[] points) {
+        int arrayStartPosition = round * points.length;
+        for (int point : points) {
+            totalScore[arrayStartPosition++] = point;
+        }
     }
 
     public int getTotalScore() {
-        return 0;
+        int totalPoints = 0;
+        for (int s : totalScore) {
+            totalPoints += s;
+        }
+        return totalPoints;
     }
 
     /**
@@ -47,7 +68,11 @@ public class Archer {
      * @return the number of 10's for this archer.
      */
     public int getTens() {
-        return 0;
+        int tensCounter = 0;
+        for (int points : totalScore) {
+            if (points == 10) tensCounter++;
+        }
+        return tensCounter;
     }
 
     /**
@@ -55,7 +80,11 @@ public class Archer {
      * @return the number of 9's for this archer.
      */
     public int getNines() {
-        return 0;
+        int ninesCounter = 0;
+        for (int points : totalScore) {
+            if (points == 10) ninesCounter++;
+        }
+        return ninesCounter;
     }
 
     public int getId() {
@@ -67,11 +96,11 @@ public class Archer {
      */
 
     /**
-     * This methods creates a List of archers. This method takes care of assigning each arhcher
+     * This methods creates a List of archers. This method takes care of assigning each archer
      * a first name, surname and lets them should 30 arrows.
      *
      * @param nrOfArchers the number of archers in the list.
-     * @return
+     * @return list of the newly generated archers
      */
     public static List<Archer> generateArchers(int nrOfArchers) {
         List<Archer> archers = new ArrayList<>(nrOfArchers);
@@ -100,5 +129,11 @@ public class Archer {
 
     private static int shootArrow() {
         return 1 + randomizer.nextInt(10);
+    }
+
+    public
+    @Override
+    String toString() {
+        return String.format("%d (%d) %s %s", id, getTotalScore(), firstName, lastName);
     }
 }
