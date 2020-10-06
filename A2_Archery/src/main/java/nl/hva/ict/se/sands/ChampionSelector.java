@@ -1,9 +1,6 @@
 package nl.hva.ict.se.sands;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 /**
  * Given a list of Archer's this class can be used to sort the list using one of three sorting algorithms.
@@ -73,6 +70,8 @@ public class ChampionSelector {
      * This method uses the Java collections sort algorithm for sorting the archers.
      */
     public static List<Archer> collectionSort(List<Archer> archers, Comparator<Archer> scoringScheme) {
+
+        archers.sort(scoringScheme);
         return archers;
     }
 
