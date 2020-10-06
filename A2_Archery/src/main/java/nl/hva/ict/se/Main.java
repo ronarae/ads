@@ -12,7 +12,7 @@ public class Main {
             System.out.println(a);
         }
 
-        ChampionSelector.selInsSort(archers, (o1, o2) -> {
+        ChampionSelector.quickSort(archers, (o1, o2) -> {
             int result = Integer.compare(o2.getTotalScore(), o1.getTotalScore());
             if (result == 0) result = Integer.compare(o2.getTens(), o1.getTens());
             if (result == 0) result = Integer.compare(o2.getNines(), o1.getNines());

@@ -42,7 +42,31 @@ public class ChampionSelector {
      * This method uses quick sort for sorting the archers.
      */
     public static List<Archer> quickSort(List<Archer> archers, Comparator<Archer> scoringScheme) {
+        sort(archers, 0, archers.size() - 1);
         return archers;
+    }
+
+    private static int partition(List<Archer> partComp, int lo, int hi)
+    { // Partition into a[lo..i-1], a[i], a[i+1..hi].
+        int i = lo, j = hi+1; // left and right scan indices
+        Archer v = partComp.get(lo); // partitioning item
+        while (true)
+        { // Scan right, scan left, check for scan complete, and exchange.
+            while (less(partComp.get(++i), v)) if (i == hi) break;
+            while (less(v,  partComp.get(--j))) if (j == lo) break;
+            if (i >= j) break;
+            exch(partComp, i, j);
+        }
+        exch(partComp, lo, j); // Put v = a[j] into position
+        return j; // with a[lo..j-1] <= a[j] <= a[j+1..hi].
+    }
+
+    private static void sort(List<Archer> a, int lo, int hi)
+    {
+        if (hi <= lo) return;
+        int j = partition(a, lo, hi); // Partition.
+        sort(a, lo, j-1); // Sort left part a[lo .. j-1].
+        sort(a, j+1, hi); // Sort right part a[j+1 .. hi].
     }
 
     /**
@@ -51,4 +75,5 @@ public class ChampionSelector {
     public static List<Archer> collectionSort(List<Archer> archers, Comparator<Archer> scoringScheme) {
         return archers;
     }
+
 }
