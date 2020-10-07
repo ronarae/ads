@@ -46,6 +46,13 @@ public class ChampionSelector {
         return archers;
     }
 
+    /**
+     * This method was made to partition the given list.
+     * @param partComp - partitioning item
+     * @param lo - lowest point
+     * @param hi - highest point
+     * @return j
+     */
     private static int partition(List<Archer> partComp, int lo, int hi)
     { // Partition into a[lo..i-1], a[i], a[i+1..hi].
         int i = lo, j = hi+1; // left and right scan indices
@@ -61,6 +68,12 @@ public class ChampionSelector {
         return j; // with a[lo..j-1] <= a[j] <= a[j+1..hi].
     }
 
+    /**
+     *  recursive sort of the list using the partition method
+     * @param a - List of archers
+     * @param lo - lowest point
+     * @param hi - highest point
+     */
     private static void sortOfQuickSort(List<Archer> a, int lo, int hi)
     {
         if (hi <= lo) return;

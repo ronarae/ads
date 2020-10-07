@@ -26,6 +26,10 @@ class ChampionSelectorTest {
         };
     }
 
+    /**
+     * This test is designed to check if the results of the sorted lists of the
+     * selection sort algorithm and collection sort algorithm aligns.
+     */
     @Test
     public void selInsSortAndCollectionSortResultInSameOrder() {
         List<Archer> unsortedArchersForSelIns = Archer.generateArchers(23);
@@ -37,4 +41,36 @@ class ChampionSelectorTest {
         assertEquals(sortedArchersCollection, sortedArchersSelIns);
     }
 
+    /**
+     * This test is designed to check if the results of the sorted lists of the
+     * quick sort algorithm and collection sort algorithm aligns.
+     */
+    @Test
+    public void quickSortAndCollectionSortResultInSameOrder() {
+        List<Archer> unsortedArchersQS = Archer.generateArchers(25);
+        List<Archer> sameUnsortedArchersCS = new ArrayList<>(unsortedArchersQS);
+
+        List<Archer> sortedArchersQS = ChampionSelector.selInsSort(unsortedArchersQS, comparator);
+        List<Archer> sortedArchersCollection = ChampionSelector.collectionSort(sameUnsortedArchersCS, comparator);
+
+        assertEquals(sortedArchersQS, sortedArchersCollection);
+    }
+
+    /**
+     * This test is designed to check if the results of the sorted lists of every algorithm aligns.
+     */
+    @Test
+    public void allAlgorithmsResultInSameOrder(){
+        List<Archer> unsortedArchersSS = Archer.generateArchers(25);
+        List<Archer> sameUnsortedArchersQS = new ArrayList<>(unsortedArchersSS);
+        List<Archer> sameUnsortedArchersCS = new ArrayList<>(unsortedArchersSS);
+
+        List<Archer> sortedArchersSS = ChampionSelector.selInsSort(unsortedArchersSS, comparator);
+        List<Archer> sortedArchersQS = ChampionSelector.selInsSort(sameUnsortedArchersQS, comparator);
+        List<Archer> sortedArchersCollection = ChampionSelector.collectionSort(sameUnsortedArchersCS, comparator);
+
+        assertEquals(sortedArchersSS, sortedArchersQS);
+        assertEquals(sortedArchersQS, sortedArchersCollection);
+        assertEquals(sortedArchersSS, sortedArchersCollection);
+    }
 }
