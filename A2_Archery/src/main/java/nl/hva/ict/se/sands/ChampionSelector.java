@@ -11,8 +11,8 @@ import java.util.List;
  */
 public class ChampionSelector {
 
-    public static boolean less(Archer v, Archer w) {
-        return new ArcherComparator().compare(v, w) < 0;
+    public static boolean less(Archer v, Archer w, Comparator<Archer> comparator) {
+        return comparator.compare(v, w) < 0;
     }
 
     private static void exch(List<Archer> a, int i, int j) {
@@ -28,7 +28,7 @@ public class ChampionSelector {
         final int N = archers.size();
         for (int i = 0; i < N; i++) {
             int min = i;
-            for (int j = i+1; j < N; j++) if (less(archers.get(j), archers.get(min))) min = j;
+            for (int j = i+1; j < N; j++) if (less(archers.get(j), archers.get(min), scoringScheme)) min = j;
             exch(archers, i, min);
         }
         return archers;
@@ -38,7 +38,7 @@ public class ChampionSelector {
      * This method uses quick sort for sorting the archers.
      */
     public static List<Archer> quickSort(List<Archer> archers, Comparator<Archer> scoringScheme) {
-        sortOfQuickSort(archers, 0, archers.size() - 1);
+        sortOfQuickSort(archers, 0, archers.size() - 1, scoringScheme);
         return archers;
     }
 
@@ -49,14 +49,14 @@ public class ChampionSelector {
      * @param hi - highest point
      * @return j
      */
-    private static int partition(List<Archer> partComp, int lo, int hi)
+    private static int partition(List<Archer> partComp, int lo, int hi, Comparator<Archer> comparator)
     { // Partition into a[lo..i-1], a[i], a[i+1..hi].
         int i = lo, j = hi+1; // left and right scan indices
         Archer partItem = partComp.get(lo); // partitioning item
         while (true)
         { // Scan right, scan left, check for scan complete, and exchange.
-            while (less(partComp.get(++i), partItem)) if (i == hi) break;
-            while (less(partItem,  partComp.get(--j))) if (j == lo) break;
+            while (less(partComp.get(++i), partItem, comparator)) if (i == hi) break;
+            while (less(partItem,  partComp.get(--j), comparator)) if (j == lo) break;
             if (i >= j) break;
             exch(partComp, i, j);
         }
@@ -70,12 +70,12 @@ public class ChampionSelector {
      * @param lo - lowest point
      * @param hi - highest point
      */
-    private static void sortOfQuickSort(List<Archer> a, int lo, int hi)
+    private static void sortOfQuickSort(List<Archer> a, int lo, int hi, Comparator<Archer> comparator)
     {
         if (hi <= lo) return;
-        int j = partition(a, lo, hi); // Partition.
-        sortOfQuickSort(a, lo, j-1); // Sort left part a[lo .. j-1].
-        sortOfQuickSort(a, j+1, hi); // Sort right part a[j+1 .. hi].
+        int j = partition(a, lo, hi, comparator); // Partition.
+        sortOfQuickSort(a, lo, j-1, comparator); // Sort left part a[lo .. j-1].
+        sortOfQuickSort(a, j+1, hi, comparator); // Sort right part a[j+1 .. hi].
     }
 
     /**

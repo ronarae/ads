@@ -10,7 +10,7 @@ import java.util.List;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ChampionSelectorTest {
-    protected ArcherComparator comparator;
+    protected Comparator<Archer> comparator;
 
     @BeforeEach
     public void createComparator() {
