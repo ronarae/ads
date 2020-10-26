@@ -14,11 +14,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class ComparatorTest {
     protected ArcherComparator comparator;
 
+    /**
+     * This before each makes sure that there is a comparator that can be used for the comparing
+     */
     @BeforeEach
     public void createComparator() {
         comparator = new ArcherComparator();
     }
 
+    /**
+     * This test is designed to check if the higher scores
+     * are being placed before the lower scores
+     */
     @Test
     public void higherScoreBeforeLowerScore() {
         List<Archer> a = Archer.generateArchers(23);
@@ -40,6 +47,10 @@ public class ComparatorTest {
         assertEquals(b, c);
     }
 
+    /**
+     * This test is designed to check if the score of two different opbjects
+     * is the same to check if the winner is the archer with the most tens
+     */
     @Test
     public void sameScoreMoreTensWin() {
         List<Archer> a = Archer.generateArchers(3);
@@ -84,6 +95,10 @@ public class ComparatorTest {
         assertEquals(a.get(2), b.get(0));
     }
 
+    /**
+     * This test is designed to check if the scores and the count of tens are the same
+     * to check if the archer that has the most nines wins.
+     */
     @Test
     public void sameScoreMoreNinesWin() {
         List<Archer> a = Archer.generateArchers(3);
@@ -128,6 +143,10 @@ public class ComparatorTest {
         assertEquals(a.get(2), b.get(0));
     }
 
+    /**
+     * This test checks if the archer that has the most experience wins
+     * when the score the count of nines and the count of tens are the same.
+     */
     @Test
     public void mostExperiencedArcherWillWin() {
         List<Archer> a = Archer.generateArchers(20);
