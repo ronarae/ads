@@ -1,6 +1,7 @@
 package nl.hva.ict.se;
 
 import nl.hva.ict.se.sands.Archer;
+import nl.hva.ict.se.sands.ArcherComparator;
 import nl.hva.ict.se.sands.ChampionSelector;
 
 import java.util.ArrayList;
@@ -35,13 +36,7 @@ public class Main {
             // it does this by setting a boolean on false which stops the loop from occurring
             if (SSBool) {
                 long startTimeSS = System.currentTimeMillis();
-                ChampionSelector.selInsSort(copyListSelection, (o1, o2) -> {
-                    int result = Integer.compare(o2.getTotalScore(), o1.getTotalScore());
-                    if (result == 0) result = Integer.compare(o2.getTens(), o1.getTens());
-                    if (result == 0) result = Integer.compare(o2.getNines(), o1.getNines());
-                    if (result == 0) result = Integer.compare(o2.getId(), o1.getId());
-                    return result;
-                });
+                ChampionSelector.selInsSort(copyListSelection, new ArcherComparator());
                 long endTimeSS = System.currentTimeMillis();
                 long totalTimeSS = endTimeSS - startTimeSS;
                 System.out.println("\nSelection sort:");
@@ -60,13 +55,7 @@ public class Main {
             // it does this by setting a boolean on false which stops the loop from occurring
             if (QSBool) {
                 long startTimeQS = System.currentTimeMillis();
-                ChampionSelector.quickSort(copyListQuicksort, (o1, o2) -> {
-                    int result = Integer.compare(o2.getTotalScore(), o1.getTotalScore());
-                    if (result == 0) result = Integer.compare(o2.getTens(), o1.getTens());
-                    if (result == 0) result = Integer.compare(o2.getNines(), o1.getNines());
-                    if (result == 0) result = Integer.compare(o2.getId(), o1.getId());
-                    return result;
-                });
+                ChampionSelector.quickSort(copyListQuicksort, new ArcherComparator());
                 long endTimeQS = System.currentTimeMillis();
                 long totalTimeQS = endTimeQS - startTimeQS;
 
@@ -86,13 +75,7 @@ public class Main {
             // it does this by setting a boolean on false which stops the loop from occurring
             if (CSBool) {
                 long startTimeCS = System.currentTimeMillis();
-                ChampionSelector.collectionSort(copyListCollections, (o1, o2) -> {
-                    int result = Integer.compare(o2.getTotalScore(), o1.getTotalScore());
-                    if (result == 0) result = Integer.compare(o2.getTens(), o1.getTens());
-                    if (result == 0) result = Integer.compare(o2.getNines(), o1.getNines());
-                    if (result == 0) result = Integer.compare(o2.getId(), o1.getId());
-                    return result;
-                });
+                ChampionSelector.collectionSort(copyListCollections, new ArcherComparator());
                 long endTimeCS = System.currentTimeMillis();
                 long totalTimeCS = endTimeCS - startTimeCS;
 

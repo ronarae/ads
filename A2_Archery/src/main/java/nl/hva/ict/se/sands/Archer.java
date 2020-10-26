@@ -82,7 +82,7 @@ public class Archer {
     public int getNines() {
         int ninesCounter = 0;
         for (int points : totalScore) {
-            if (points == 10) ninesCounter++;
+            if (points == 9) ninesCounter++;
         }
         return ninesCounter;
     }

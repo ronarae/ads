@@ -12,11 +12,7 @@ import java.util.List;
 public class ChampionSelector {
 
     public static boolean less(Archer v, Archer w) {
-        int result = Integer.compare(w.getTotalScore(), v.getTotalScore());
-        if (result == 0) result = Integer.compare(w.getTens(), v.getTens());
-        if (result == 0) result = Integer.compare(w.getNines(), v.getNines());
-        if (result == 0) result = Integer.compare(w.getId(), v.getId());
-        return result < 0;
+        return new ArcherComparator().compare(v, w) < 0;
     }
 
     private static void exch(List<Archer> a, int i, int j) {
