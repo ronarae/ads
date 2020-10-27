@@ -8,7 +8,6 @@ public class CoronaTestLane {
     private LocalTime openingTime;      // start time of sampling at the test lane today
     private LocalTime closingTime;      // latest time of passible arrivals of patients
                                         // hereafter, nurses will continue work until the queue is empty
-
     // simulation statistics for reporting
     private int maxQueueLength;             // the maximum queue length of waiting patients at any time today
     private int maxRegularWaitTime;         // the maximum wait time of regular patients today
