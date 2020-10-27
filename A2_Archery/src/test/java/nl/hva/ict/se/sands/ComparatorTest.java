@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
 public class ComparatorTest {
-    protected ArcherComparator comparator;
+    protected Comparator<Archer> comparator;
 
     /**
      * This before each makes sure that there is a comparator that can be used for the comparing
@@ -104,8 +104,8 @@ public class ComparatorTest {
         List<Archer> a = Archer.generateArchers(3);
         List<Archer> b = new ArrayList<>(a);
 
-        int[] all10Round = new int[10];
-        Arrays.fill(all10Round, 9);
+        int[] all9Round = new int[10];
+        Arrays.fill(all9Round, 9);
 
         int[] firstLastRound = new int[10];
         int[] secondLastRound = new int[10];
@@ -124,13 +124,13 @@ public class ComparatorTest {
         thirdLastRound[8] = 8;
         thirdLastRound[9] = 7;
 
-        a.get(0).registerScoreForRound(0, all10Round);
-        a.get(1).registerScoreForRound(0, all10Round);
-        a.get(2).registerScoreForRound(0, all10Round);
+        a.get(0).registerScoreForRound(0, all9Round);
+        a.get(1).registerScoreForRound(0, all9Round);
+        a.get(2).registerScoreForRound(0, all9Round);
 
-        a.get(0).registerScoreForRound(1, all10Round);
-        a.get(1).registerScoreForRound(1, all10Round);
-        a.get(2).registerScoreForRound(1, all10Round);
+        a.get(0).registerScoreForRound(1, all9Round);
+        a.get(1).registerScoreForRound(1, all9Round);
+        a.get(2).registerScoreForRound(1, all9Round);
 
         a.get(0).registerScoreForRound(2, firstLastRound);
         a.get(1).registerScoreForRound(2, secondLastRound);
