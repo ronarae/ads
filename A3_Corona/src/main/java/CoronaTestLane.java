@@ -1,3 +1,5 @@
+import com.sun.source.tree.Tree;
+
 import java.time.LocalTime;
 import java.util.*;
 
@@ -6,7 +8,7 @@ public class CoronaTestLane {
     private List<Patient> patients;     // all patients visiting the test lane today
     private List<Nurse> nurses;         // all nurses working at the test lane today
     private LocalTime openingTime;      // start time of sampling at the test lane today
-    private LocalTime closingTime;      // latest time of passible arrivals of patients
+    private LocalTime closingTime;      // latest time of possible arrivals of patients
                                         // hereafter, nurses will continue work until the queue is empty
     // simulation statistics for reporting
     private int maxQueueLength;             // the maximum queue length of waiting patients at any time today
@@ -73,7 +75,6 @@ public class CoronaTestLane {
         // interleaved by nurses inviting patients from the waiting queue to have their sample taken from their nose...
 
         // maintain the patients queue by priority and arrival time
-        // TODO This priority queue needs a proper way of determining the priority for the patients
         Queue<Patient> waitingPatients = new PriorityQueue<>();
 
         // reset availability of the nurses
@@ -84,13 +85,11 @@ public class CoronaTestLane {
         }
 
         // maintain a queue of nurses ordered by earliest time of availability
-        // TODO This priority queue needs a proper way of determining the next available nurse
         Queue<Nurse> availableNurses = new PriorityQueue<>();
         availableNurses.addAll(nurses);
 
         // ensure patients are processed in order of arrival
-        // TODO Ensure that the patients are ordered by arrival time
-//        patients.sort(...);
+        patients.sort(new Patient.CompareOnArrivalTime());
 
         // track the max queuelength as part of the simulation
         maxQueueLength = 0;
@@ -189,19 +188,70 @@ public class CoronaTestLane {
      */
     public Map<String, Integer> patientsByZipArea() {
 
-        // TODO create, populate and return the result map
-
-
-        return null;
+        TreeMap<String, Integer> map = new TreeMap<>();
+        for (Patient p : patients) {
+            map.put(p.getZipCode().substring(0, 4), map.getOrDefault(p.getZipCode().substring(0, 4), 0) + 1);
+        }
+        return map;
     }
 
     public Map<Patient.Symptom, String> zipAreasWithHighestPatientPercentageBySymptom(Map<String, Integer> patientsByZipArea) {
+        //Create a new treemap to store the final result
+        TreeMap<Patient.Symptom, String> map = new TreeMap<>();
+        //Create a new treemap that will contain all the different values
+        TreeMap<String, TreeMap<Patient.Symptom, Integer>> allTheValues = new TreeMap<>();
 
-        // TODO create, populate and return the result map
+        //loop through every key value pair of the patientsByZipArea.
+        for(Map.Entry<String, Integer> m : patientsByZipArea.entrySet()) {
+            //create a variable for the postcode
+            String postcode = m.getKey();
+            //set the key in the treemap and set the value equals to a new treemap
+            allTheValues.put(postcode, new TreeMap<>());
+            //loop through all of the patients
+            for (Patient p : patients) {
+                //check if the postcode that is currently counting is the same as the postcode of the current patient
+                if (p.getZipCode().substring(0, 4).equals(postcode)) {
+                    //loop through all of the symptoms of the patient
+                    for (int i = 0; i < p.getSymptoms().length; i++) {
+                        //check if the patient has a specific symptom
+                        if (p.getSymptoms()[i]) {
+                            //create a variable where the symptom is stored
+                            Patient.Symptom s = Patient.Symptom.values()[i];
+                            //create a variable where the inner treemap is stored
+                            TreeMap<Patient.Symptom, Integer> tm = allTheValues.get(postcode);
+                            //get the count of patients with a specific symptom on a specific postcode
+                            Integer in = tm.getOrDefault(s, 0);
+                            //add one to the count of patients
+                            tm.put(s, ++in);
+                        }
+                    }
+                }
+            }
+        }
 
-
-
-        return null;
+        //loop through all the different symptoms
+        for (Patient.Symptom s : Patient.Symptom.values()) {
+            //set the postcode and highestPercent variables to default values
+            String postcode = "";
+            double highestPercent = 0;
+            //loop through all the key value pairs of the different postcode
+            for (Map.Entry<String, TreeMap<Patient.Symptom, Integer>> m : allTheValues.entrySet()) {
+                //check if the postcode has a patient with that specific symptom
+                if (m.getValue().getOrDefault(s, 0) != 0) {
+                    //calculate the percentage of contaminated patients in that area
+                    double percent = (double)m.getValue().get(s) / (double)patientsByZipArea.get(m.getKey()) * 100.;
+                    //check if the percent is higher than the highest percentage
+                    if (percent > highestPercent) {
+                        //set the values of the postcode and the highestPercent to the new values
+                        postcode = m.getKey();
+                        highestPercent = percent;
+                    }
+                }
+            }
+            //add the symptom as key and the postcode as the value to the map
+            map.put(s, postcode);
+        }
+        return map;
     }
 
     public List<Patient> getPatients() {

@@ -1,9 +1,9 @@
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Comparator;
 import java.util.Random;
 
-public class Patient {
-
+public class Patient implements Comparable<Patient> {
     public enum Symptom {
         DRY_COUGH,
         TIREDNESS,
@@ -115,6 +115,30 @@ public class Patient {
         this.sampledBy = sampledBy;
     }
 
-    // TODO more methods or local classes related to the patient
+    @Override
+    public String toString() {
+        StringBuilder symptomString = new StringBuilder();
+        for (int i = 0; i < symptoms.length; i++) {
+            if (symptoms[i]) {
+                if (symptomString.length() == 0) {
+                    symptomString.append(Symptom.values()[i]);
+                } else symptomString.append(",").append(Symptom.values()[i]);
+            }
+        }
+        return String.format("%s(%s)@%s[%s]", zipCode, dateOfBirth, arrivedAt, symptomString.toString());
+    }
 
+    public static class CompareOnArrivalTime implements Comparator<Patient> {
+        @Override
+        public int compare(Patient o1, Patient o2) {
+            return o1.arrivedAt.compareTo(o2.arrivedAt);
+        }
+    }
+
+    @Override
+    public int compareTo(Patient o) {
+        int result = Boolean.compare(hasPriority, o.hasPriority);
+        if (result == 0) result = arrivedAt.compareTo(o.arrivedAt);
+        return result;
+    }
 }

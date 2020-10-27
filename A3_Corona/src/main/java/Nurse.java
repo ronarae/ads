@@ -1,8 +1,7 @@
 import java.time.LocalTime;
 import java.util.Random;
 
-// TODO
-public class Nurse  {
+public class Nurse implements Comparable<Nurse> {
     private final static int SAMPLE_TIME_MIN = 60;
     private final static int SAMPLE_TIME_MAX = 160;
 
@@ -38,10 +37,11 @@ public class Nurse  {
         // this time varies between 60 and 159 seconds as is advised from GGD experience.
         int sampleDuration = SAMPLE_TIME_MIN + randomizer.nextInt(SAMPLE_TIME_MAX - SAMPLE_TIME_MIN);
 
-        // TODO update patient and nurse simulation data
-        //  calculate and set the new availableAt time of the nurse
-
-
+        setAvailableAt(startTime.plusSeconds(sampleDuration));
+        numPatientsSampled++;
+        totalSamplingTime += sampleDuration;
+        patient.setSampledAt(startTime);
+        patient.setSampledBy(this);
     }
 
     public LocalTime getAvailableAt() {
@@ -72,6 +72,8 @@ public class Nurse  {
         this.totalSamplingTime = totalSamplingTime;
     }
 
-    // TODO other methods relevant to nurses
-
+    @Override
+    public int compareTo(Nurse o) {
+        return availableAt.compareTo(o.availableAt);
+    }
 }
