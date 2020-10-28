@@ -1,7 +1,9 @@
 import com.sun.source.tree.Tree;
 
 import java.time.LocalTime;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class CoronaTestLane {
 
@@ -77,6 +79,7 @@ public class CoronaTestLane {
         // maintain the patients queue by priority and arrival time
         Queue<Patient> waitingPatients = new PriorityQueue<>();
 
+
         // reset availability of the nurses
         for (Nurse nurse : nurses) {
             nurse.setAvailableAt(openingTime);
@@ -138,10 +141,53 @@ public class CoronaTestLane {
 
         // all patients are underway
 
-        // TODO calculate the aggregated statistics from the simulation
-        //  i.e. time the work was finished
-        //       average and maximum waiting times
+        //calculate the time that the workday was over (including overtime)
+        LocalTime timeWorkFinished = LocalTime.MIN;
+        for (Nurse n : nurses) {
+            if (n.getAvailableAt().compareTo(timeWorkFinished) > 0) timeWorkFinished = n.getAvailableAt();
+        }
+        workFinished = timeWorkFinished;
 
+        //variables to keep track of the regular patients times
+        long regularAverageWaitingTimeTotal = 0;
+        long regularMaxWaitingTime = 0;
+        int regularPatientCounter = 0;
+
+        //variables to keep track of the priority patients times
+        long priorityAverageWaitingTimeTotal = 0;
+        long priorityMaxWaitingTime  = 0;
+        int priorityPatientCounter = 0;
+
+        //loop through all the patients
+        for (Patient p : patients) {
+            //check if the patient is a priority patient
+            if (!p.isHasPriority()) {
+                //add one to the regular patient counter
+                regularPatientCounter++;
+                //get the total time that the patient was waiting for
+                long totalTime = p.getArrivedAt().until(p.getSampledAt(), ChronoUnit.SECONDS);
+                //add the total time to the total total waiting time
+                regularAverageWaitingTimeTotal += totalTime;
+                //check if the total time is bigger than the last biggest total time if this is the case replace the max total time with this total time
+                if (totalTime > regularMaxWaitingTime) regularMaxWaitingTime = totalTime;
+            } else {
+                //add one to the priority patient counter
+                priorityPatientCounter++;
+                //get the total time that the patient was waiting for
+                long totalTime = p.getArrivedAt().until(p.getSampledAt(), ChronoUnit.SECONDS);
+                //add the total time to the total total waiting time
+                priorityAverageWaitingTimeTotal += totalTime;
+                //check if the total time is bigger than the last biggest total time if this is the case replace the max total time with this total time
+                if (totalTime > priorityMaxWaitingTime) priorityMaxWaitingTime = totalTime;
+            }
+        }
+
+        //add the calculated values to the correct variables.
+        averageRegularWaitTime = (double) regularAverageWaitingTimeTotal / regularPatientCounter;
+        maxRegularWaitTime = (int) regularMaxWaitingTime;
+
+        averagePriorityWaitTime = (double) priorityAverageWaitingTimeTotal / priorityPatientCounter;
+        maxPriorityWaitTime = (int) priorityMaxWaitingTime;
     }
 
     /**
@@ -151,20 +197,25 @@ public class CoronaTestLane {
         System.out.println("Simulation results per nurse:");
         System.out.println("    Name: #Patients:    Avg. sample time: Workload:");
 
-        // TODO report per nurse:
-        //  numPatients,
-        //  average sample time for taking the nose sample,
-        //  and percentage of opening hours of the Test Lane actually spent on taking samples
+        for (Nurse n : nurses) {
+            System.out.printf("%-9s%10d%20.2f%8d%%%n",
+                    n.getName(),
+                    n.getNumPatientsSampled(),
+                    (double)n.getTotalSamplingTime() / (double)n.getNumPatientsSampled(),
+                    (int)(((double)n.getTotalSamplingTime() / (double)(getOpeningTime().until(getClosingTime(), ChronoUnit.SECONDS))) * 100)
+            );
+        }
 
 
+        System.out.println("Work finished at " + workFinished);
 
-        // TODO report the time all nurses had finished all sampling work
+        System.out.println("Maximum patient queue length " + maxQueueLength);
 
-        // TODO report the maximum length of the queue at any time
+        System.out.print("Wait times:        Average:  Maximum:\n");
+        System.out.printf("Regular patients:%9.2f%10d%n", averageRegularWaitTime, maxRegularWaitTime);
+        if (patients.stream().anyMatch(Patient::isHasPriority)) System.out.printf("Priority patients:%8.2f%10d%n", averagePriorityWaitTime, maxPriorityWaitTime);
 
-        // TODO report average and maximum wait times for regular and priority patients (if any)
-        System.out.printf("Wait times:        Average:  Maximum:\n");
-
+        System.out.println("\n\n");
     }
 
     /**
@@ -198,59 +249,35 @@ public class CoronaTestLane {
     public Map<Patient.Symptom, String> zipAreasWithHighestPatientPercentageBySymptom(Map<String, Integer> patientsByZipArea) {
         //Create a new treemap to store the final result
         TreeMap<Patient.Symptom, String> map = new TreeMap<>();
-        //Create a new treemap that will contain all the different values
-        TreeMap<String, TreeMap<Patient.Symptom, Integer>> allTheValues = new TreeMap<>();
 
-        //loop through every key value pair of the patientsByZipArea.
-        for(Map.Entry<String, Integer> m : patientsByZipArea.entrySet()) {
-            //create a variable for the postcode
-            String postcode = m.getKey();
-            //set the key in the treemap and set the value equals to a new treemap
-            allTheValues.put(postcode, new TreeMap<>());
-            //loop through all of the patients
-            for (Patient p : patients) {
-                //check if the postcode that is currently counting is the same as the postcode of the current patient
-                if (p.getZipCode().substring(0, 4).equals(postcode)) {
-                    //loop through all of the symptoms of the patient
-                    for (int i = 0; i < p.getSymptoms().length; i++) {
-                        //check if the patient has a specific symptom
-                        if (p.getSymptoms()[i]) {
-                            //create a variable where the symptom is stored
-                            Patient.Symptom s = Patient.Symptom.values()[i];
-                            //create a variable where the inner treemap is stored
-                            TreeMap<Patient.Symptom, Integer> tm = allTheValues.get(postcode);
-                            //get the count of patients with a specific symptom on a specific postcode
-                            Integer in = tm.getOrDefault(s, 0);
-                            //add one to the count of patients
-                            tm.put(s, ++in);
-                        }
-                    }
+        //loop through all the different symptoms with a normal for loop so the index is available
+        for (int i = 0; i < Patient.Symptom.values().length; i++) {
+            //create a shortcut for the current symptom in the loop
+            Patient.Symptom s = Patient.Symptom.values()[i];
+            //create the variables that keep track of the highest percentage and the zip code
+            String zip = "";
+            double highestPercentage = 0.;
+            //loop through the key value pairs that contain as key the zipcode and as value the count of patients
+            for (Map.Entry<String, Integer> m : patientsByZipArea.entrySet()) {
+                //initialize a counter to keep track of the number of patients with a specific symptom in a specific zipcode
+                int symptomCounter = 0;
+                //loop through all the patients
+                for (Patient p : patients) {
+                    //when the zipcode is equals to the currently counted zipcode and the patient has the currently looked for symptom add one to the symptom counter
+                    if (p.getZipCode().substring(0, 4).equals(m.getKey()) && p.getSymptoms()[i]) symptomCounter++;
+                }
+                //calculate the percentage of the patients that has a specific symptom
+                double percentage = (double)symptomCounter /  (double)m.getValue() * 100;
+                //check if the percentage is higher than the highest percentage, when that is the case change the zip to the new zipcode and the highest percentage to the new percentage
+                if (percentage > highestPercentage) {
+                    zip = m.getKey();
+                    highestPercentage = percentage;
                 }
             }
+            //put the key value pair of this symptom together with the zip code with the highest percentage
+            map.put(s, zip);
         }
-
-        //loop through all the different symptoms
-        for (Patient.Symptom s : Patient.Symptom.values()) {
-            //set the postcode and highestPercent variables to default values
-            String postcode = "";
-            double highestPercent = 0;
-            //loop through all the key value pairs of the different postcode
-            for (Map.Entry<String, TreeMap<Patient.Symptom, Integer>> m : allTheValues.entrySet()) {
-                //check if the postcode has a patient with that specific symptom
-                if (m.getValue().getOrDefault(s, 0) != 0) {
-                    //calculate the percentage of contaminated patients in that area
-                    double percent = (double)m.getValue().get(s) / (double)patientsByZipArea.get(m.getKey()) * 100.;
-                    //check if the percent is higher than the highest percentage
-                    if (percent > highestPercent) {
-                        //set the values of the postcode and the highestPercent to the new values
-                        postcode = m.getKey();
-                        highestPercent = percent;
-                    }
-                }
-            }
-            //add the symptom as key and the postcode as the value to the map
-            map.put(s, postcode);
-        }
+        //return the tree map
         return map;
     }
 

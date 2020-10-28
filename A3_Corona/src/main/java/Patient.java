@@ -137,7 +137,7 @@ public class Patient implements Comparable<Patient> {
 
     @Override
     public int compareTo(Patient o) {
-        int result = Boolean.compare(hasPriority, o.hasPriority);
+        int result = Boolean.compare(o.hasPriority, hasPriority);
         if (result == 0) result = arrivedAt.compareTo(o.arrivedAt);
         return result;
     }
