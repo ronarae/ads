@@ -4,6 +4,7 @@ import utils.XMLParser;
 import javax.xml.stream.XMLStreamException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 public class Employee implements Comparable<Employee> {
     public static final int MAX_JUNIOR_WAGE = 26;
@@ -75,9 +76,7 @@ public class Employee implements Comparable<Employee> {
      * @return
      */
     public int calculateManagedBudget() {
-        AtomicInteger budgetResponsibilty = new AtomicInteger();
-        managedProjects.stream().mapToInt(p -> budgetResponsibilty.addAndGet(p.calculateManpowerBudget()));
-        return budgetResponsibilty.get();
+        return managedProjects.stream().mapToInt(Project::calculateManpowerBudget).sum();
     }
 
     public int getNumber() {

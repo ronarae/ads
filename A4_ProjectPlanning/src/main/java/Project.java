@@ -4,6 +4,7 @@ import utils.XMLParser;
 import javax.xml.stream.XMLStreamException;
 import java.time.LocalDate;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Project implements Comparable<Project> {
     private static Random randomizer = new Random(06112020);
@@ -97,8 +98,7 @@ public class Project implements Comparable<Project> {
      * @param hoursPerDay
      */
     public void addCommitment(Employee employee, int hoursPerDay) {
-        // TODO
-
+        committedHoursPerDay.put(employee, committedHoursPerDay.getOrDefault(employee, 0) + hoursPerDay);
 
         // also register this project assignment for this employee,
         // in case that had not been done before
@@ -112,8 +112,7 @@ public class Project implements Comparable<Project> {
      * @return
      */
     public int calculateManpowerBudget() {
-
-        return 0;
+        return committedHoursPerDay.entrySet().stream().mapToInt(e->e.getKey().getHourlyWage()*e.getValue()).sum() * getNumWorkingDays();
     }
 
     public String getCode() {
