@@ -2,6 +2,7 @@ import utils.SLF4J;
 import utils.XMLParser;
 
 import javax.xml.stream.XMLStreamConstants;
+import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
 import java.util.function.Predicate;
@@ -64,8 +65,8 @@ public class PPS {
      * @return
      */
     public Project calculateLongestProject() {
-        // TODO
-        return null;
+        Comparator<Project> comparator = Comparator.comparing(Project::getEndDate);
+        return projects.stream().filter(e -> e.getEndDate() != null).max(comparator).get();
     }
 
     /**
