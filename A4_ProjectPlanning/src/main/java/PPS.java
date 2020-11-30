@@ -54,8 +54,8 @@ public class PPS {
      * @return
      */
     public double calculateAverageHourlyWage() {
-        // TODO
-        return 0.0;
+        double totalWage = employees.stream().mapToDouble(Employee::getHourlyWage).sum();
+        return totalWage / employees.size();
     }
 
     /**

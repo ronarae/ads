@@ -3,6 +3,7 @@ import utils.XMLParser;
 
 import javax.xml.stream.XMLStreamException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Employee implements Comparable<Employee> {
     public static final int MAX_JUNIOR_WAGE = 26;
@@ -52,6 +53,21 @@ public class Employee implements Comparable<Employee> {
         return String.format("%s(%d)", name, number);
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Employee employee = (Employee) o;
+
+        return number == employee.number;
+    }
+
+    @Override
+    public int hashCode() {
+        return number;
+    }
+
     /**
      * Calculates the total budget of all committed manpower
      * across all projects that this employee is managing
@@ -59,8 +75,9 @@ public class Employee implements Comparable<Employee> {
      * @return
      */
     public int calculateManagedBudget() {
-        // TODO
-        return 0;
+        AtomicInteger budgetResponsibilty = new AtomicInteger();
+        managedProjects.stream().mapToInt(p -> budgetResponsibilty.addAndGet(p.calculateManpowerBudget()));
+        return budgetResponsibilty.get();
     }
 
     public int getNumber() {

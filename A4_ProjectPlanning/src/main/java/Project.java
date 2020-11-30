@@ -68,10 +68,25 @@ public class Project implements Comparable<Project> {
         return Calendar.getWorkingDays(this.startDate, this.endDate);
     }
 
-    // TODO make sure Projects can be printed. The format is 'title(code)'
+    @Override
+    public String toString() {
+        return String.format("%s(%s)", title, code);
+    }
 
-    // TODO make sure Projects can be added to a HashMap, HashSet
-    //  every project shall have a unique code
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Project project = (Project) o;
+
+        return code.equals(project.code);
+    }
+
+    @Override
+    public int hashCode() {
+        return code.hashCode();
+    }
 
     /**
      * add the specified hoursPerDay commitment for the specified employee on the project
@@ -97,7 +112,7 @@ public class Project implements Comparable<Project> {
      * @return
      */
     public int calculateManpowerBudget() {
-        // TODO
+
         return 0;
     }
 
