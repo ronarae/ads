@@ -47,10 +47,10 @@ public class Employee implements Comparable<Employee> {
         return number - o.number;
     }
 
-    // TODO make sure Employees can be printed. The format is 'name(number)'
-
-    // TODO make sure Employees can be added to a HashMap, HashSet
-    //  every employee shall have a unique number
+    @Override
+    public String toString() {
+        return String.format("%s(%d)", name, number);
+    }
 
     /**
      * Calculates the total budget of all committed manpower

@@ -144,7 +144,7 @@ public class PPS {
          * @return
          */
         public Builder addEmployee(Employee employee) {
-            // TODO
+            pps.employees.add(employee);
             return this;
         }
 
@@ -156,7 +156,9 @@ public class PPS {
          * @return
          */
         public Builder addProject(Project project, Employee manager) {
-            // TODO
+            pps.projects.add(project);
+            addEmployee(manager);
+            manager.getManagedProjects().add(project);
             return this;
         }
 
@@ -171,7 +173,9 @@ public class PPS {
          * @return
          */
         public Builder addCommitment(String projectCode, int employeeNr, int hoursPerDay) {
-            // TODO
+            Project p = pps.projects.stream().filter(e -> e.getCode().equals(projectCode)).findFirst().get();
+            Employee e = pps.employees.stream().filter(n -> n.getNumber() == employeeNr).findFirst().get();
+            p.addCommitment(e, hoursPerDay);
             return this;
         }
 
