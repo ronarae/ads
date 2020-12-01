@@ -5,7 +5,10 @@ import javax.xml.stream.XMLStreamConstants;
 import java.time.LocalDate;
 import java.time.Month;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class PPS {
 
@@ -47,7 +50,13 @@ public class PPS {
                 employees.size(), projects.size());
 
         // TODO calculate and display statistics
-
+        System.out.printf("1. The average hourly wage of all employees is %.2f%n", calculateAverageHourlyWage());
+        System.out.printf("2. The longest project is '%s' with %d available working days%n", calculateLongestProject(), calculateLongestProject().getNumWorkingDays());
+        System.out.printf("3. The follow employees have the broadest assignment in no less than %d different projects:%n%s%n", 12, calculateMostInvolvedEmployees().toString());
+        System.out.printf("4. The total budget of committed project manpower is %d%n", calculateTotalManpowerBudget());
+        System.out.printf("5. Below is an overview of total managed budget by junior employees {hourly wage <= 26}:%n%s%n", calculateManagedBudgetOverview(e -> e.getHourlyWage() <= 26));
+        System.out.printf("6. Below is an overview of employees working at least 8 hours per day: %d%n", 1);
+        System.out.printf("7. Below is an overview of cumulative monthly project spends: %n%s%n", calculateCumulativeMonthlySpends());
     }
 
     /**
@@ -66,7 +75,7 @@ public class PPS {
      */
     public Project calculateLongestProject() {
         Comparator<Project> comparator = Comparator.comparing(Project::getEndDate);
-        return projects.stream().filter(e -> e.getEndDate() != null).max(comparator).get();
+        return projects.stream().filter(e -> e.getEndDate() != null).max(comparator).orElse(null);
     }
 
     /**
@@ -77,9 +86,12 @@ public class PPS {
      * @return
      */
     public int calculateTotalManpowerBudget() {
-        // TODO
-        return 0;
+        return employees.stream()
+                .mapToInt(e -> e.getManagedProjects().stream()
+                    .mapToInt(Project::calculateManpowerBudget).sum()
+                ).sum();
     }
+
 
     /**
      * finds the employees that are assigned to the highest number of different projects
@@ -88,8 +100,10 @@ public class PPS {
      * @return
      */
     public Set<Employee> calculateMostInvolvedEmployees() {
-        // TODO
-        return null;
+        return employees.stream()
+                .filter(e -> e.getAssignedProjects().size() == employees.stream()
+                    .mapToInt(i -> i.getAssignedProjects().size()).max().orElse(0))
+                .collect(Collectors.toSet());
     }
 
     /**
@@ -100,8 +114,7 @@ public class PPS {
      * @return
      */
     public Map<Employee,Integer> calculateManagedBudgetOverview(Predicate<Employee> filter) {
-        // TODO
-        return null;
+        return employees.stream().filter(filter).collect(Collectors.toMap(e -> e, Employee::calculateManagedBudget));
     }
 
     /**
@@ -111,9 +124,32 @@ public class PPS {
      * @return
      */
     public Map<Month,Integer> calculateCumulativeMonthlySpends() {
-        // TODO
-        return null;
+//        Map<Month, Integer> overviewMonthlySpends = new TreeMap<>();
+//        for (Month m : Month.values()) {
+//            this.projects.forEach(p -> {
+//                long numDays = p.getWorkingDays().stream()
+//                        .filter(d -> d.getMonth().equals(m))
+//                        .count();
+//                int totalBudget = (int) (numDays * p.getCommittedHoursPerDay().entrySet().stream()
+//                    .mapToInt(e -> e.getValue() * e.getKey().getHourlyWage()).sum());
+//                if (totalBudget > 0) {
+//                    overviewMonthlySpends.merge(m, totalBudget, (current, adding) -> current + adding);
+//                }
+//            });
+//        }
+//        return overviewMonthlySpends;
 
+        return Stream.of(Month.values())
+                .map(m -> {
+                    int i = projects.stream().mapToInt(p -> (int) ((p.getWorkingDays().stream()
+                            .filter(d -> d.getMonth().equals(m))
+                            .count()) * (p.getCommittedHoursPerDay().entrySet().stream()
+                            .mapToInt(e -> e.getValue() * e.getKey().getHourlyWage())
+                            .sum()))
+                    ).sum();
+                    return Collections.singletonMap(m, i);
+                }).filter(e -> e.get(e.keySet().iterator().next()) > 0)
+                .collect(Collectors.toMap(k -> k.keySet().iterator().next(), v -> v.get(v.keySet().iterator().next()), (o1, o2) -> o1, TreeMap::new));
     }
 
     /**
@@ -159,7 +195,15 @@ public class PPS {
         public Builder addProject(Project project, Employee manager) {
             pps.projects.add(project);
             addEmployee(manager);
-            manager.getManagedProjects().add(project);
+            Employee m = pps.getEmployees()
+                    .stream().filter(e -> e.getNumber() == manager.getNumber())
+                    .findFirst()
+                    .get();
+            m.getManagedProjects()
+                    .add(pps.getProjects().stream()
+                    .filter(e -> e.getCode() == project.getCode())
+                    .findFirst()
+                    .get());
             return this;
         }
 

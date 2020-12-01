@@ -23,12 +23,12 @@ class PPSTest {
                     .addEmployee(employee3)
                     .addProject(project1, employee1)
                     .addProject(project2, new Employee(60006))
-                        .addProject(project3, employee2)
-                        .addCommitment("P1001", 60006, 4)
-                        .addCommitment("P1001", 77007, 3)
-                        .addCommitment("P1001", 88808, 2)
-                        .addCommitment("P2002", 88808, 3)
-                        .addCommitment("P2002", 88808, 1)
+                    .addProject(project3, employee2)
+                    .addCommitment("P1001", 60006, 4)
+                    .addCommitment("P1001", 77007, 3)
+                    .addCommitment("P1001", 88808, 2)
+                    .addCommitment("P2002", 88808, 3)
+                    .addCommitment("P2002", 88808, 1)
                     .build();
     }
 
