@@ -73,4 +73,15 @@ class PPSTest {
         assertEquals("Floor insulation - BPH-05(P100575)", pps.calculateLongestProject().toString(),"longest project");
         assertEquals(159441, pps.calculateTotalManpowerBudget(),"total manpower budget");
     }
+
+    @Test
+    void checkAllPrintedStatistics() {
+        assertEquals(25, pps.calculateAverageHourlyWage(), "average hourly rate");
+        assertEquals("TestProject-1(P1001)", pps.calculateLongestProject().toString(), "longest project");
+        assertEquals("[William O. PORTER(88808)]", pps.calculateMostInvolvedEmployees().toString(), "calculate the most involved employees");
+        assertEquals(18945, pps.calculateTotalManpowerBudget(), "calculate total manpower budget");
+        assertEquals("{Michael K. MORALES(60006)=18945}", pps.calculateManagedBudgetOverview(e -> e.calculateManagedBudget() > 0).toString(), "give the managed budget overview from all the project managers");
+        assertEquals("[]", pps.getFulltimeEmployees().toString(), "get a set of all the full time employees");
+        assertEquals("{FEBRUARY=4300, MARCH=4515, APRIL=7370, MAY=2760}", pps.calculateCumulativeMonthlySpends().toString(), "calculate the cummulative monthly spends");
+    }
 }
