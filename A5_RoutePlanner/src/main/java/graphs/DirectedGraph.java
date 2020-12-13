@@ -42,10 +42,8 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
      *          or newVertex itself if it has been added.
      */
     public V addOrGetVertex(V newVertex) {
-        // TODO add and return the newVertex, or return the existing duplicate vertex
-
         // a proper vertex shall be returned at all times
-        return null;
+        return vertices.values().stream().filter(e -> e.getId().equals(newVertex.getId())).findFirst().orElse(newVertex);
     }
 
     /**
