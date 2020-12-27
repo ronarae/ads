@@ -1,9 +1,12 @@
 package route_planner;
 
+import graphs.DGEdge;
+
 import java.io.PrintStream;
 import java.util.Locale;
+import java.util.Objects;
 
-public class Road
+public class Road implements DGEdge<Junction>
         // TODO extend superclass and/or implement interfaces
 {
     private String name;        // the name of the road segment
@@ -104,4 +107,20 @@ public class Road
     }
 
     // TODO more implementations as required for use with DirectedGraph, HashSet and/or HashMap
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Road road = (Road) o;
+
+        if (!from.equals(road.from)) return false;
+        return to.equals(road.to);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(from, to);
+    }
 }

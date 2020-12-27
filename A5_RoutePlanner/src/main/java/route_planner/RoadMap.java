@@ -144,7 +144,7 @@ public class RoadMap extends DirectedGraph<Junction, Road> {
      */
     public void svgDrawMap(String resourceName, DGPath path) {
         try {
-            Path resources = Paths.get(this.getClass().getResource("/").getPath());
+            Path resources = Paths.get("./target/classes");
             String svgPath = resources.toAbsolutePath() + "/" + resourceName;
             PrintStream svgWriter = new PrintStream(svgPath);
 

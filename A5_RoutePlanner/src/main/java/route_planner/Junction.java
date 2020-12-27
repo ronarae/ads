@@ -1,12 +1,15 @@
 package route_planner;
 
+import graphs.DGVertex;
+import graphs.DirectedGraph;
+
 import java.io.PrintStream;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-public class Junction
+public class Junction implements DGVertex<Road>
         // TODO extend superclass and/or implement interfaces
 {
     private String name;            // unique name of the junction
@@ -113,6 +116,31 @@ public class Junction
         return Math.sqrt(dX*dX + dY*dY);
     }
 
-    // TODO more implementations as required for use with DirectedGraph, HashSet and/or HashMap
+    @Override
+    public String getId() {
+        return name;
+    }
 
+    @Override
+    public Set<Road> getEdges() {
+        return roads;
+    }
+
+//     TODO more implementations as required for use with DirectedGraph, HashSet and/or HashMap
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        Junction junction = (Junction) o;
+
+        return name.equals(junction.name);
+    }
+
+    @Override
+    public int hashCode() {
+        return name.hashCode();
+    }
 }

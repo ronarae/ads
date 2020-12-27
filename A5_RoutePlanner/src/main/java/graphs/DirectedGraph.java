@@ -42,8 +42,10 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
      *          or newVertex itself if it has been added.
      */
     public V addOrGetVertex(V newVertex) {
+        if (vertices.values().stream().anyMatch(e -> e.getId().equals(newVertex.getId()))) return vertices.values().stream().filter(e -> e.getId().equals(newVertex.getId())).findFirst().orElse(newVertex);
+        vertices.put(newVertex.getId(), newVertex);
         // a proper vertex shall be returned at all times
-        return vertices.values().stream().filter(e -> e.getId().equals(newVertex.getId())).findFirst().orElse(newVertex);
+        return newVertex;
     }
 
     /**
@@ -58,7 +60,6 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
                 count++;
             }
         }
-
         return count;
     }
 
@@ -75,9 +76,35 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
      */
     public E addOrGetEdge(E newEdge) {
         // TODO add and return the newEdge, or return the existing duplicate edge or throw an exception
-
+        if (vertices.get(newEdge.getFrom().getId()) == null) {
+            addOrGetVertex(newEdge.getFrom());
+        }
+        if (vertices.get(newEdge.getTo().getId()) == null) {
+            addOrGetVertex(newEdge.getTo());
+        }
+        for (DGVertex v : vertices.values()) {
+            if (v.getId().equals(newEdge.getFrom().getId()) && System.identityHashCode(v) != System.identityHashCode(newEdge.getFrom())) {
+                throw new IllegalArgumentException("Duplicate found");
+            }
+            if (v.getId().equals(newEdge.getTo().getId()) && System.identityHashCode(v) != System.identityHashCode(newEdge.getTo())) {
+                throw new IllegalArgumentException("Duplicate found");
+            }
+        }
+        if (
+                vertices.values().stream()
+                        .filter(e -> e.getId().equals(newEdge.getFrom().getId()))
+                        .anyMatch(e -> System.identityHashCode(e) != System.identityHashCode(newEdge.getFrom()))
+                        || vertices.values().stream()
+                                .filter(e -> e.getId().equals(newEdge.getTo().getId()))
+                        .anyMatch(e -> System.identityHashCode(e) != System.identityHashCode(newEdge.getTo())))
+            throw new IllegalArgumentException("Duplicate found!, please use that instance!");
+        Set<E> edges = vertices.get(newEdge.getFrom().getId()).getEdges();
+        if (!edges.isEmpty() && edges.stream().filter(e -> e.getFrom().getId().equals(newEdge.getFrom().getId())).anyMatch(e -> e.getTo().getId().equals(newEdge.getTo().getId()))) {
+            return edges.stream().filter(e -> e.getFrom().getId().equals(newEdge.getFrom().getId())).filter(e -> e.getTo().getId().equals(newEdge.getTo().getId())).findFirst().orElse(newEdge);
+        }
+        edges.add(newEdge);
         // a proper edge shall be returned at all times
-        return null;
+        return newEdge;
     }
 
     /**
@@ -92,7 +119,6 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
                 count++;
             }
         }
-
         return count;
     }
 
@@ -107,9 +133,7 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
      * @return  the total number of edges in the graph
      */
     public int getNumEdges() {
-        // TODO calculate and return the total number of edges in the graph
-
-        return 0;
+        return vertices.values().stream().mapToInt(e -> e.getEdges().size()).sum();
     }
 
     /**
