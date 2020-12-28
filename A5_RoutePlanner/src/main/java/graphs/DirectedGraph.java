@@ -75,7 +75,6 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
      *          been added to the graph yet have the same id as another vertex in the graph
      */
     public E addOrGetEdge(E newEdge) {
-        // TODO add and return the newEdge, or return the existing duplicate edge or throw an exception
         if (vertices.get(newEdge.getFrom().getId()) == null) {
             addOrGetVertex(newEdge.getFrom());
         }
@@ -217,14 +216,38 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
         // easy target
         if (start == target) return path;
 
+        System.out.printf("Go from %s to %s%n", start, target);
+
         // TODO calculate the path from start to target by recursive depth-first-search
         //  (create another private recursive helper method)
         //  register all visited vertices while going, for statistical purposes
         //  if you hit the target: complete the path and bail out !!!
 
+        if (dfsRecursionHelperMethod(start, target, path)) {
+            Collections.reverse(path.getEdges());
+            path.getEdges().stream().map(e -> e.getFrom().getId()).forEach(System.out::println);
+            return path;
+        }
+
 
         // no path found, graph was not connected ???
         return null;
+    }
+
+    private boolean dfsRecursionHelperMethod(V currentNode, V targetNode, DGPath path) {
+        path.visited.add(currentNode);
+        if (!currentNode.equals(targetNode)) {
+            for (E edge : currentNode.getEdges()) {
+                if (path.visited.contains(edge.getTo())) continue;
+                if (dfsRecursionHelperMethod(edge.getTo(), targetNode, path)) {
+                    path.getEdges().add(edge);
+                    return true;
+                }
+            }
+        } else {
+            return true;
+        }
+        return false;
     }
 
     /**
