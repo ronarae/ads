@@ -42,7 +42,7 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
      *          or newVertex itself if it has been added.
      */
     public V addOrGetVertex(V newVertex) {
-        if (vertices.values().stream().anyMatch(e -> e.getId().equals(newVertex.getId()))) return vertices.values().stream().filter(e -> e.getId().equals(newVertex.getId())).findFirst().orElse(newVertex);
+        if (vertices.values().stream().anyMatch(e -> e.getId().equals(newVertex.getId()))) return vertices.values().stream().filter(e -> e.getId().equals(newVertex.getId())).findFirst().get();
         vertices.put(newVertex.getId(), newVertex);
         // a proper vertex shall be returned at all times
         return newVertex;
@@ -81,7 +81,7 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
         if (vertices.get(newEdge.getTo().getId()) == null) {
             addOrGetVertex(newEdge.getTo());
         }
-        for (DGVertex v : vertices.values()) {
+        for (DGVertex<E> v : vertices.values()) {
             if (v.getId().equals(newEdge.getFrom().getId()) && System.identityHashCode(v) != System.identityHashCode(newEdge.getFrom())) {
                 throw new IllegalArgumentException("Duplicate found");
             }
@@ -89,14 +89,14 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
                 throw new IllegalArgumentException("Duplicate found");
             }
         }
-        if (
-                vertices.values().stream()
-                        .filter(e -> e.getId().equals(newEdge.getFrom().getId()))
-                        .anyMatch(e -> System.identityHashCode(e) != System.identityHashCode(newEdge.getFrom()))
-                        || vertices.values().stream()
-                                .filter(e -> e.getId().equals(newEdge.getTo().getId()))
-                        .anyMatch(e -> System.identityHashCode(e) != System.identityHashCode(newEdge.getTo())))
-            throw new IllegalArgumentException("Duplicate found!, please use that instance!");
+//        if (
+//                vertices.values().stream()
+//                        .filter(e -> e.getId().equals(newEdge.getFrom().getId()))
+//                        .anyMatch(e -> System.identityHashCode(e) != System.identityHashCode(newEdge.getFrom()))
+//                        || vertices.values().stream()
+//                                .filter(e -> e.getId().equals(newEdge.getTo().getId()))
+//                        .anyMatch(e -> System.identityHashCode(e) != System.identityHashCode(newEdge.getTo())))
+//            throw new IllegalArgumentException("Duplicate found!, please use that instance!");
         Set<E> edges = vertices.get(newEdge.getFrom().getId()).getEdges();
         if (!edges.isEmpty() && edges.stream().filter(e -> e.getFrom().getId().equals(newEdge.getFrom().getId())).anyMatch(e -> e.getTo().getId().equals(newEdge.getTo().getId()))) {
             return edges.stream().filter(e -> e.getFrom().getId().equals(newEdge.getFrom().getId())).filter(e -> e.getTo().getId().equals(newEdge.getTo().getId())).findFirst().orElse(newEdge);
@@ -219,8 +219,6 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
         System.out.printf("Go from %s to %s%n", start, target);
 
         if (dfsRecursionHelperMethod(start, target, path)) {
-            E startingPlace = path.getEdges().pollFirst();
-            path.getEdges().add(startingPlace);
             Collections.reverse(path.getEdges());
             path.totalWeight = path.getEdges().size();
             return path;
@@ -271,8 +269,6 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
         if (start == target) return path;
 
         if (bfsRecursiveHelperMethod(start, target, path)) {
-            E startingEdge = path.getEdges().poll();
-            path.getEdges().add(startingEdge);
             Collections.reverse(path.getEdges());
             return path;
         }
@@ -282,11 +278,9 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
     }
 
     private boolean bfsRecursiveHelperMethod(V currentNode, V targetNode, DGPath path) {
-        System.out.println("search " + currentNode);
         path.visited.add(currentNode);
         List<E> edges = new ArrayList<>();
         if (!currentNode.equals(targetNode)) {
-            currentNode.getEdges().stream().map(DGEdge::getTo).forEach(e -> System.out.printf("%s has edges %s%n", currentNode, e));
             for (E edge : currentNode.getEdges()) {
                 if (path.visited.contains(edge.getTo())) continue;
                 path.visited.add(edge.getTo());
