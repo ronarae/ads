@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class Junction implements DGVertex<Road>
-        // TODO extend superclass and/or implement interfaces
 {
     private String name;            // unique name of the junction
     private double locationX;       // RD x-coordinate in km
@@ -125,9 +124,6 @@ public class Junction implements DGVertex<Road>
     public Set<Road> getEdges() {
         return roads;
     }
-
-//     TODO more implementations as required for use with DirectedGraph, HashSet and/or HashMap
-
 
     @Override
     public boolean equals(Object o) {

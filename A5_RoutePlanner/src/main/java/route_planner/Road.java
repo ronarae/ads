@@ -7,7 +7,6 @@ import java.util.Locale;
 import java.util.Objects;
 
 public class Road implements DGEdge<Junction>
-        // TODO extend superclass and/or implement interfaces
 {
     private String name;        // the name of the road segment
     private Junction from;      // the junction where this road segment starts
@@ -105,8 +104,6 @@ public class Road implements DGEdge<Junction>
     public String toString() {
         return this.to.getName() + "(" + this.name + ")";
     }
-
-    // TODO more implementations as required for use with DirectedGraph, HashSet and/or HashMap
 
     @Override
     public boolean equals(Object o) {
