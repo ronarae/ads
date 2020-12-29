@@ -1,5 +1,6 @@
 package graphs;
 
+import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -348,7 +349,7 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
         if (start == target) return path;
 
         // keep track of the DSP status of all visited nodes
-        // you may choose a different approach of tracking progress of the algorith, if you wish
+        // you may choose a different approach of tracking progress of the algorithm, if you wish
         Map<V, DSPNode> progressData = new HashMap<>();
 
         // initialise the progress of the start node
@@ -357,20 +358,40 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
         progressData.put(start, nextDspNode);
 
         while (nextDspNode != null) {
+            nextDspNode.marked = true;
+            if (nextDspNode.vertex.equals(target)) break;
+            DSPNode node;
+            for (E edge : nextDspNode.vertex.getEdges()) {
+                path.visited.add(edge.getTo());
+                if (progressData.get(edge.getTo()) != null) {
+                    node = progressData.get(edge.getTo());
+                    if (node.marked) continue;
+                    double possibleNewWeightedSum = nextDspNode.weightSumTo + weightMapper.apply(edge);
+                    if (possibleNewWeightedSum < node.weightSumTo) node.weightSumTo = possibleNewWeightedSum;
+                } else {
+                    node = new DSPNode(edge.getTo());
+                    node.weightSumTo = nextDspNode.weightSumTo + weightMapper.apply(edge);
+                    progressData.put(edge.getTo(), node);
+                }
+            }
 
-            // TODO continue Dijkstra's algorithm to process nextDspNode
-            //  mark nodes as you complete their processing
-            //  register all visited vertices while going for statistical purposes
-            //  if you hit the target: complete the path and bail out !!!
+            E edgeFromPrevious = nextDspNode.vertex.getEdges().stream().filter(e -> e.getTo().equals(
+                    progressData.values().stream()
+                        .min(DSPNode::compareTo)
+                        .orElse(null)
+                        .vertex
+            )).findFirst().orElse(null);
+            nextDspNode = progressData.values().stream().min(DSPNode::compareTo).orElse(null);
+            if (nextDspNode != null) nextDspNode.fromEdge = edgeFromPrevious;
+        }
 
-
-            // TODO find the next nearest node that is not marked yet
-            //  nextDspNode = progressData.values().stream()...
-            nextDspNode = null;
+        while (!nextDspNode.vertex.equals(path.start)) {
+            path.edges.add(nextDspNode.fromEdge);
+            nextDspNode = progressData.get(nextDspNode.fromEdge.getFrom());
         }
 
         // no path found, graph was not connected ???
-        return null;
+        return path;
     }
 
 
