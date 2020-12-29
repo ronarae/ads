@@ -218,14 +218,11 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
 
         System.out.printf("Go from %s to %s%n", start, target);
 
-        // TODO calculate the path from start to target by recursive depth-first-search
-        //  (create another private recursive helper method)
-        //  register all visited vertices while going, for statistical purposes
-        //  if you hit the target: complete the path and bail out !!!
-
         if (dfsRecursionHelperMethod(start, target, path)) {
+            E startingPlace = path.getEdges().pollFirst();
+            path.getEdges().add(startingPlace);
             Collections.reverse(path.getEdges());
-            path.getEdges().stream().map(e -> e.getFrom().getId()).forEach(System.out::println);
+            path.totalWeight = path.getEdges().size();
             return path;
         }
 
@@ -273,13 +270,42 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
         // easy target
         if (start == target) return path;
 
-        // TODO calculate the path from start to target by breadth-first-search
-        //  register all visited vertices while going, for statistical purposes
-        //  if you hit the target: complete the path and bail out !!!
-
+        if (bfsRecursiveHelperMethod(start, target, path)) {
+            E startingEdge = path.getEdges().poll();
+            path.getEdges().add(startingEdge);
+            Collections.reverse(path.getEdges());
+            return path;
+        }
 
         // no path found, graph was not connected ???
         return null;
+    }
+
+    private boolean bfsRecursiveHelperMethod(V currentNode, V targetNode, DGPath path) {
+        System.out.println("search " + currentNode);
+        path.visited.add(currentNode);
+        List<E> edges = new ArrayList<>();
+        if (!currentNode.equals(targetNode)) {
+            currentNode.getEdges().stream().map(DGEdge::getTo).forEach(e -> System.out.printf("%s has edges %s%n", currentNode, e));
+            for (E edge : currentNode.getEdges()) {
+                if (path.visited.contains(edge.getTo())) continue;
+                path.visited.add(edge.getTo());
+                edges.add(edge);
+                if (edge.getTo().equals(targetNode)) {
+                    path.getEdges().add(edge);
+                    return true;
+                }
+            }
+            for (E edge : edges) {
+                if (bfsRecursiveHelperMethod(edge.getTo(), targetNode, path)) {
+                    path.getEdges().add(edge);
+                    return true;
+                }
+            }
+        } else {
+            return true;
+        }
+        return false;
     }
 
     // helper class to register the state of a vertex in dijkstra shortest path algorithm
