@@ -357,40 +357,84 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
         nextDspNode.weightSumTo = 0.0;
         progressData.put(start, nextDspNode);
 
+        V to;
+        DSPNode node;
+
         while (nextDspNode != null) {
+            //mark the current dspnode as marked
             nextDspNode.marked = true;
+
+            //stop the loop als de target node gevonden is.
             if (nextDspNode.vertex.equals(target)) break;
-            DSPNode node;
+
             for (E edge : nextDspNode.vertex.getEdges()) {
-                path.visited.add(edge.getTo());
-                if (progressData.get(edge.getTo()) != null) {
-                    node = progressData.get(edge.getTo());
-                    if (node.marked) continue;
-                    double possibleNewWeightedSum = nextDspNode.weightSumTo + weightMapper.apply(edge);
-                    if (possibleNewWeightedSum < node.weightSumTo) node.weightSumTo = possibleNewWeightedSum;
+                to = edge.getTo();
+                path.visited.add(to);
+                //check if the node that the edge goes to, is not marked.
+                if (progressData.get(to) != null && progressData.get(to).marked) continue;
+
+                //check if the progressData map already contains this node
+                if (progressData.get(to) != null) {
+                    //add the available dspnode to the node var
+                    node = progressData.get(to);
+                    //save the calculated new length to a var
+                    double possibleNewLength = nextDspNode.weightSumTo + weightMapper.apply(edge);
+                    //replace the old length with the new length when te new length is lower than the old length
+                    if (possibleNewLength < node.weightSumTo) node.weightSumTo = possibleNewLength;
                 } else {
-                    node = new DSPNode(edge.getTo());
+                    //create a new dspnode
+                    node = new DSPNode(to);
+                    //calculate the weightsumto from the new node
                     node.weightSumTo = nextDspNode.weightSumTo + weightMapper.apply(edge);
-                    progressData.put(edge.getTo(), node);
+                    //add the new node to the map
+                    progressData.put(to, node);
                 }
             }
 
-            E edgeFromPrevious = nextDspNode.vertex.getEdges().stream().filter(e -> e.getTo().equals(
-                    progressData.values().stream()
-                        .min(DSPNode::compareTo)
-                        .orElse(null)
-                        .vertex
-            )).findFirst().orElse(null);
-            nextDspNode = progressData.values().stream().min(DSPNode::compareTo).orElse(null);
-            if (nextDspNode != null) nextDspNode.fromEdge = edgeFromPrevious;
+            //create an instance to the next unvisited node that has the lowest weight value
+            DSPNode comingNode = progressData.values().stream().filter(e -> !e.marked).min(DSPNode::compareTo).orElse(null);
+
+            boolean breaking = false;
+
+            //check if that node exists
+            if (comingNode != null) {
+                //if that node exists, calculate which edge is used to go to the new node
+                for (DSPNode n : progressData.values()) {
+                    if (breaking) break;
+                    for (E edge : n.vertex.getEdges()) {
+                        if (edge.getTo().equals(comingNode.vertex)) {
+                            if (weightMapper.apply(edge) + n.weightSumTo == comingNode.weightSumTo) {
+                                breaking = true;
+                                comingNode.fromEdge = edge;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            //replace the nextdspnode with the coming node
+            nextDspNode = comingNode;
         }
 
-        while (!nextDspNode.vertex.equals(path.start)) {
-            path.edges.add(nextDspNode.fromEdge);
-            nextDspNode = progressData.get(nextDspNode.fromEdge.getFrom());
+        //get the instance of the target node
+        node = progressData.get(target);
+
+        //return null if that node doesn't exits
+        if (node == null) return null;
+
+        //set the totalweight of the path equals to the weight that is used to go to the target node.
+        path.totalWeight = node.weightSumTo;
+
+        //loop through the nodes that the path is made up of
+        while (node.fromEdge != null) {
+            //add the node to the edge at the front of the linkedlist
+            path.getEdges().addFirst(node.fromEdge);
+            //move the node to the previous node in the path
+            node = progressData.get(node.fromEdge.getFrom());
         }
 
-        // no path found, graph was not connected ???
+        // return the path
         return path;
     }
 
