@@ -413,6 +413,8 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
                 }
             }
 
+            if (nextDspNode.vertex.equals(target)) break;
+
             //replace the nextdspnode with the coming node
             nextDspNode = comingNode;
         }
