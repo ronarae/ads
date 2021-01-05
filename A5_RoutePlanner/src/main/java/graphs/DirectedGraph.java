@@ -217,8 +217,6 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
         // easy target
         if (start == target) return path;
 
-        System.out.printf("Go from %s to %s%n", start, target);
-
         if (dfsRecursionHelperMethod(start, target, path)) {
             Collections.reverse(path.getEdges());
             path.totalWeight = path.getEdges().size();
@@ -413,8 +411,6 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
                 }
             }
 
-            if (nextDspNode.vertex.equals(target)) break;
-
             //replace the nextdspnode with the coming node
             nextDspNode = comingNode;
         }
@@ -443,14 +439,17 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
 
     // helper class to register the state of a vertex in A* shortest path algorithm
     private class ASNode extends DSPNode {
-        // TODO add and handle information for the minimumWeightEstimator
+        double estimatedCost;
 
-        // TODO enhance this constructor as required
         private ASNode(V vertex) {
             super(vertex);
+            estimatedCost = -1;
         }
 
-        // TODO override the compareTo
+        @Override
+        public int compareTo(DSPNode dspv) {
+            return Double.compare(estimatedCost, ((ASNode)dspv).estimatedCost);
+        }
     }
 
 
@@ -482,16 +481,73 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
         // easy target
         if (start == target) return path;
 
-        // TODO apply the A* algorithm to find shortest path from start to target.
-        //  take dijkstra's solution as the starting point and enhance with heuristic functionality
-        //  register all visited vertices while going, for statistical purposes
+        Map<V, ASNode> programData = new HashMap<>();
+        ASNode nextNode = new ASNode(start);
+        nextNode.weightSumTo = 0;
+        nextNode.estimatedCost = minimumWeightEstimator.apply(start, target);
+        programData.put(start, nextNode);
 
+        V to;
+        ASNode node;
+        ASNode comingNode;
 
+        while (nextNode != null) {
+            nextNode.marked = true;
 
+            if (nextNode.vertex.equals(target)) break;
 
-        // TODO END
+            for (E edge : nextNode.vertex.getEdges()) {
+                to = edge.getTo();
+                path.visited.add(to);
+
+                if (programData.get(to) != null) {
+                    node = programData.get(to);
+
+                    if (node.marked) continue;
+
+                    if (node.estimatedCost == -1) node.estimatedCost = minimumWeightEstimator.apply(to, target);
+
+                    double possibleNewLength = nextNode.weightSumTo + weightMapper.apply(edge);
+
+                    if (possibleNewLength + nextNode.estimatedCost < node.weightSumTo + node.estimatedCost) node.weightSumTo = possibleNewLength;
+                } else {
+                    node = new ASNode(to);
+                    node.weightSumTo = nextNode.weightSumTo + weightMapper.apply(edge);
+                    node.estimatedCost = minimumWeightEstimator.apply(to, target);
+                    programData.put(to, node);
+                }
+            }
+
+            comingNode = programData.values().stream().filter(e -> !e.marked).min(ASNode::compareTo).orElse(null);
+
+            if (comingNode != null) {
+                for (ASNode n : programData.values()) {
+                    if (n.vertex.equals(comingNode.vertex)) continue;
+                    for (E edge : n.vertex.getEdges()) {
+                        if (edge.getTo().equals(comingNode.vertex)) {
+                            if (comingNode.weightSumTo == (n.weightSumTo + weightMapper.apply(edge))) {
+                                comingNode.fromEdge = edge;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            nextNode = comingNode;
+        }
+
+        node = programData.get(target);
+
+        if (node == null) return null;
+
+        path.totalWeight = node.weightSumTo;
+
+        while (node.fromEdge != null) {
+            path.getEdges().addFirst(node.fromEdge);
+            node = programData.get(node.fromEdge.getFrom());
+        }
         // no path found, graph was not connected ???
-        return null;
+        return path;
     }
 
     /**
@@ -507,8 +563,7 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
                                               Function<E,Double> weightMapper) {
         return aStarShortestPath(startId, targetId,
                 weightMapper,
-                // TODO provide a minimumWeightEstimator that makes A* run like regular Dijkstra
-                null
+                (e, i) -> 0.
         );
     }
 

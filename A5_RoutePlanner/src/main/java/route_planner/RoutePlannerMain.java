@@ -31,14 +31,12 @@ public class RoutePlannerMain {
         doPathSearches(roadMap, FROM_ID, TO_ID);
 
         // now we have an accident between Diemen and Weesp...
-        // TODO change the roadMap such that max average speed from Diemen to Weesp is only 5 km/h
-
+        roadMap.getVertexById("Diemen").getEdges().stream().filter(e -> e.getTo().equals(roadMap.getVertexById("Weesp"))).findFirst().get().setMaxSpeed(5);
 
         // find the fastest route avoiding the accident
         DirectedGraph.DGPath path =
                 roadMap.dijkstraShortestPathByAStar(FROM_ID, TO_ID,
-                        // TODO provide an edgeWeightCalculator that yields the expected travel time for the road
-                        null
+                        e -> e.getLength() * e.getMaxSpeed()
                 );
         System.out.println("DijkstraByAStar-accident-Weesp: " + path);
         roadMap.svgDrawMap(String.format("DSPACC-%s-%s.svg", FROM_ID, TO_ID), path);
@@ -74,29 +72,26 @@ public class RoutePlannerMain {
         // find the routes by A* Shortest Path with minimum total length
         path = roadMap.aStarShortestPath(fromId, toId,
                 Road::getLength,
-                // TODO provide a minimumWeightEstimator that yields the minimum distance between two Junctions
-                null
+                (e, i) -> Math.sqrt(Math.pow(e.getLocationX() - i.getLocationX(), 2) + Math.pow(e.getLocationY() - i.getLocationY(), 2))
         );
         System.out.println("AStar-Shortest-Path: " + path);
         roadMap.svgDrawMap(String.format("ASSP-%s-%s.svg", fromId, toId), path);
         path = roadMap.aStarShortestPath(toId, fromId,
                 Road::getLength,
-                // TODO provide the same minimumWeightEstimator as above
-                null
+                (e, i) -> Math.sqrt(Math.pow(e.getLocationX() - i.getLocationX(), 2) + Math.pow(e.getLocationY() - i.getLocationY(), 2))
         );
         System.out.println("AStar-Shortest-Path return: " + path);
 
         // find the routes by A* Shortest Path with minimum total travel time
         path = roadMap.aStarShortestPath(fromId, toId,
-                // TODO provide an edgeWeightCalculator that yields the expected travel time for the road
-                null,
-
-                // TODO provide a heuristic that yields the minimum travel time between two Junctions (at 120 km/h)
-                null
+                e -> e.getLength() * e.getMaxSpeed(),
+                (e, i) -> Math.sqrt(Math.pow(e.getLocationX() - i.getLocationX(), 2) + Math.pow(e.getLocationY() - i.getLocationY(), 2)) * 120
         );
         System.out.println("AStar-Fastest-Route: " + path);
         roadMap.svgDrawMap(String.format("ASFR-%s-%s.svg", fromId, toId), path);
 
         System.out.println();
     }
+
+
 }
