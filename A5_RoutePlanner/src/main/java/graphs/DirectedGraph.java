@@ -218,8 +218,7 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
         if (start == target) return path;
 
         if (dfsRecursionHelperMethod(start, target, path)) {
-            Collections.reverse(path.getEdges());
-            path.totalWeight = path.getEdges().size();
+//            path.totalWeight = path.getEdges().size();
             return path;
         }
 
@@ -229,18 +228,27 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
     }
 
     private boolean dfsRecursionHelperMethod(V currentNode, V targetNode, DGPath path) {
+        //add the currentnode to the list of visited nodes
         path.visited.add(currentNode);
+        //check if the current node is equals to the targetnode
         if (!currentNode.equals(targetNode)) {
+            //loop through all the edges from this node.
             for (E edge : currentNode.getEdges()) {
+                //add all the destination nodes to the visited nodes
                 if (path.visited.contains(edge.getTo())) continue;
+                //run the same method again (recursion) and check if the result is true
                 if (dfsRecursionHelperMethod(edge.getTo(), targetNode, path)) {
-                    path.getEdges().add(edge);
+                    //add the edge to the front of the edges array
+                    path.getEdges().addFirst(edge);
+                    //return true
                     return true;
                 }
             }
         } else {
+            //return true when the target node is found
             return true;
         }
+        //return false by default
         return false;
     }
 
@@ -268,7 +276,7 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
         if (start == target) return path;
 
         if (bfsRecursiveHelperMethod(start, target, path)) {
-            Collections.reverse(path.getEdges());
+//            path.totalWeight = path.getEdges().size();
             return path;
         }
 
@@ -277,27 +285,43 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
     }
 
     private boolean bfsRecursiveHelperMethod(V currentNode, V targetNode, DGPath path) {
+        //add the current node to the list of visited nodes
         path.visited.add(currentNode);
+        //create an empty list of edges.
         List<E> edges = new ArrayList<>();
+        //check if the current node is equals to the target node
         if (!currentNode.equals(targetNode)) {
+            //loop through all the edges of the current node
             for (E edge : currentNode.getEdges()) {
+                //check if the destination from the edge is already visited
                 if (path.visited.contains(edge.getTo())) continue;
+                //add the destination to the visited list
                 path.visited.add(edge.getTo());
+                //add the current edge to the local edges list.
                 edges.add(edge);
+                //check if the destination node is equals to the target node
                 if (edge.getTo().equals(targetNode)) {
-                    path.getEdges().add(edge);
+                    //add the edge to the front of the edge list
+                    path.getEdges().addFirst(edge);
+                    //return true
                     return true;
                 }
             }
+            //loop through the local edges list
             for (E edge : edges) {
+                //run the method again and check the output
                 if (bfsRecursiveHelperMethod(edge.getTo(), targetNode, path)) {
-                    path.getEdges().add(edge);
+                    //add the edge to the front of the edges list
+                    path.getEdges().addFirst(edge);
+                    //return true
                     return true;
                 }
             }
         } else {
+            //return true when the destination is found
             return true;
         }
+        //default return false
         return false;
     }
 
@@ -491,66 +515,106 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
         ASNode node;
         ASNode comingNode;
         boolean breaking;
+        double possibleNewLength;
 
+        //loop as long as nextNode is not equals to null
         while (nextNode != null) {
+            //mark the current node as marked
             nextNode.marked = true;
 
+            //check if the current node is the target node, if this is the case break out of the loop
             if (nextNode.vertex.equals(target)) break;
 
+            //loop through all the edges of this node
             for (E edge : nextNode.vertex.getEdges()) {
+                //create a local var to make the code shorter
                 to = edge.getTo();
+                //add the destination of the edge to the visited list
                 path.visited.add(to);
 
+                //check if this node is already in the programData map
                 if (programData.get(to) != null) {
+                    //create a local instance to the node
                     node = programData.get(to);
 
+                    //check if the node is marked, if this is the case go to the next iteration of the loop
                     if (node.marked) continue;
 
+                    //check if the estimated cost to the destination node is equals to -1 (default value)
+                    //if this is the case calculate the estimated cost with the Pythagorean algorithm
                     if (node.estimatedCost == -1) node.estimatedCost = minimumWeightEstimator.apply(to, target);
 
-                    double possibleNewLength = nextNode.weightSumTo + weightMapper.apply(edge);
+                    //create a easier way to access the possible new length
+                    possibleNewLength = nextNode.weightSumTo + weightMapper.apply(edge);
 
+                    //check if the possible new length is smaller than the current length
+                    //if this is the case replace the current length with the new length
                     if (possibleNewLength < node.weightSumTo) node.weightSumTo = possibleNewLength;
                 } else {
+                    //create a new node
                     node = new ASNode(to);
+                    //calculate the length to this node
                     node.weightSumTo = nextNode.weightSumTo + weightMapper.apply(edge);
+                    //calculate the estimated cost of this node
                     node.estimatedCost = minimumWeightEstimator.apply(to, target);
+                    //add this node to the programData map
                     programData.put(to, node);
                 }
             }
 
+            //get the node where the sum of the length to the node and the estimated length to the destination node
+            //is the shortest in the list of the nodes that are not yet marked
             comingNode = programData.values().stream().filter(e -> !e.marked).min(ASNode::compareTo).orElse(null);
 
+            //check if there is a node found
             if (comingNode != null) {
+                //set the local var breaking to false;
                 breaking = false;
+                //loop through all the nodes in the programData
                 for (ASNode n : programData.values()) {
+                    //check if the node is equals to the node that comes after this and skip that node
                     if (n.vertex.equals(comingNode.vertex)) continue;
+                    //loop through all the edges of the node in the current iteration
                     for (E edge : n.vertex.getEdges()) {
+                        //check if the current edge has the coming node as a destination
                         if (edge.getTo().equals(comingNode.vertex)) {
+                            //check if the sum of the length of this node and the length of the edge are equals
+                            //to the shortest length of the coming node
                             if (comingNode.weightSumTo == (n.weightSumTo + weightMapper.apply(edge))) {
+                                //set the fromEdge of the coming node to this edge
                                 comingNode.fromEdge = edge;
+                                //set breaking to true, so to outer loop will also stop
                                 breaking = true;
+                                //break out of this loop
                                 break;
                             }
                         }
                     }
+                    //if breaking is true, break out of this loop
                     if (breaking) break;
                 }
             }
+            //set the next node equals to the coming node
             nextNode = comingNode;
         }
 
+        //get the target node from the program data map
         node = programData.get(target);
 
+        //check if this node exists, if it doesn't exists, there is no route to the target node, return null
         if (node == null) return null;
 
+        //set the total length of the path equals to the length of the shortest path to the target node
         path.totalWeight = node.weightSumTo;
 
+        //loop through the nodes until the node is null
         while (node.fromEdge != null) {
+            //add the edge to the front of the edges list
             path.getEdges().addFirst(node.fromEdge);
+            //set the node equals to the previous node
             node = programData.get(node.fromEdge.getFrom());
         }
-        // no path found, graph was not connected ???
+        // return the path
         return path;
     }
 
@@ -567,6 +631,8 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
                                               Function<E,Double> weightMapper) {
         return aStarShortestPath(startId, targetId,
                 weightMapper,
+                //to let a star run as a dijkstra, the estimated length has to be always the same, so
+                //it will be canceled out in the final equation
                 (e, i) -> 0.
         );
     }
