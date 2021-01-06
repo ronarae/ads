@@ -448,7 +448,7 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
 
         @Override
         public int compareTo(DSPNode dspv) {
-            return Double.compare(estimatedCost, ((ASNode)dspv).estimatedCost);
+            return Double.compare(estimatedCost + weightSumTo, ((ASNode)dspv).estimatedCost + dspv.weightSumTo);
         }
     }
 
@@ -490,6 +490,7 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
         V to;
         ASNode node;
         ASNode comingNode;
+        boolean breaking;
 
         while (nextNode != null) {
             nextNode.marked = true;
@@ -509,7 +510,7 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
 
                     double possibleNewLength = nextNode.weightSumTo + weightMapper.apply(edge);
 
-                    if (possibleNewLength + nextNode.estimatedCost < node.weightSumTo + node.estimatedCost) node.weightSumTo = possibleNewLength;
+                    if (possibleNewLength < node.weightSumTo) node.weightSumTo = possibleNewLength;
                 } else {
                     node = new ASNode(to);
                     node.weightSumTo = nextNode.weightSumTo + weightMapper.apply(edge);
@@ -521,16 +522,19 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
             comingNode = programData.values().stream().filter(e -> !e.marked).min(ASNode::compareTo).orElse(null);
 
             if (comingNode != null) {
+                breaking = false;
                 for (ASNode n : programData.values()) {
                     if (n.vertex.equals(comingNode.vertex)) continue;
                     for (E edge : n.vertex.getEdges()) {
                         if (edge.getTo().equals(comingNode.vertex)) {
                             if (comingNode.weightSumTo == (n.weightSumTo + weightMapper.apply(edge))) {
                                 comingNode.fromEdge = edge;
+                                breaking = true;
                                 break;
                             }
                         }
                     }
+                    if (breaking) break;
                 }
             }
             nextNode = comingNode;
