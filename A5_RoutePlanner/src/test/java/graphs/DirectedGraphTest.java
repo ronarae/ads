@@ -110,6 +110,58 @@ class DirectedGraphTest {
     }
 
     @Test
+    void checkDFSearchRoute() {
+        DirectedGraph.DGPath path = europe.depthFirstSearch("UK", "LUX");
+        Country UK = europe.getVertexById("UK");
+        Country FR = europe.getVertexById("FR");
+        Country LUX = europe.getVertexById("LUX");
+
+        Border uk_fr = UK.getEdges().stream().filter(e -> e.getTo().equals(FR)).findFirst().get();
+        Border fr_lux = FR.getEdges().stream().filter(e -> e.getTo().equals(LUX)).findFirst().get();
+
+        assertEquals(path.getEdges().get(0), uk_fr, "First part of the path");
+        assertEquals(path.getEdges().get(1), fr_lux, "Second part of the path");
+    }
+
+    @Test
+    void checkDFSearchIt() {
+        DirectedGraph.DGPath path = europe.depthFirstSearchIterative("UK","LUX");
+        assertNotNull(path);
+        assertEquals(europe.getVertexById("UK"), path.getStart());
+        assertTrue(path.getEdges().size() >= 2);
+        assertTrue(path.getVisited().size() > path.getEdges().size());
+    }
+
+    @Test
+    void checkDFSearchStartIsTargetIt() {
+        DirectedGraph.DGPath path = europe.depthFirstSearchIterative("HU","HU");
+        assertNotNull(path);
+        assertEquals(europe.getVertexById("HU"), path.getStart());
+        assertEquals(0, path.getEdges().size());
+        assertEquals(1, path.getVisited().size());
+    }
+
+    @Test
+    void checkDFSearchUnconnectedIt() {
+        DirectedGraph.DGPath path = europe.depthFirstSearchIterative("UK","HU");
+        assertNull(path);
+    }
+
+    @Test
+    void checkDFSearchRouteIt() {
+        DirectedGraph<Country, Border>.DGPath path = europe.depthFirstSearchIterative("UK", "LUX");
+        Country UK = europe.getVertexById("UK");
+        Country BE = europe.getVertexById("BE");
+        Country LUX = europe.getVertexById("LUX");
+
+        Border uk_be = UK.getEdges().stream().filter(e -> e.getTo().equals(BE)).findFirst().get();
+        Border be_lux = BE.getEdges().stream().filter(e -> e.getTo().equals(LUX)).findFirst().get();
+
+        assertEquals(path.getEdges().get(0), uk_be, "First part of the path");
+        assertEquals(path.getEdges().get(1), be_lux, "Second part of the path");
+    }
+
+    @Test
     void checkBFSearch() {
         DirectedGraph.DGPath path = europe.breadthFirstSearch("UK","LUX");
         assertNotNull(path);
@@ -128,9 +180,61 @@ class DirectedGraphTest {
     }
 
     @Test
+    void checkBFSRoute() {
+        DirectedGraph.DGPath path = europe.breadthFirstSearch("UK", "LUX");
+        Country UK = europe.getVertexById("UK");
+        Country FR = europe.getVertexById("FR");
+        Country LUX = europe.getVertexById("LUX");
+
+        Border uk_fr = UK.getEdges().stream().filter(e -> e.getTo().equals(FR)).findFirst().get();
+        Border fr_lux = FR.getEdges().stream().filter(e -> e.getTo().equals(LUX)).findFirst().get();
+
+        assertEquals(path.getEdges().get(0), uk_fr, "First part of the path");
+        assertEquals(path.getEdges().get(1), fr_lux, "Second part of the path");
+    }
+
+    @Test
     void checkBFSearchUnconnected() {
         DirectedGraph.DGPath path = europe.breadthFirstSearch("UK","HU");
         assertNull(path);
+    }
+
+    @Test
+    void checkBFSearchIt() {
+        DirectedGraph.DGPath path = europe.breadthFirstSearchIterative("UK","LUX");
+        assertNotNull(path);
+        assertEquals(europe.getVertexById("UK"), path.getStart());
+        assertEquals(2, path.getEdges().size());
+        assertTrue(path.getVisited().size() > path.getEdges().size());
+    }
+
+    @Test
+    void checkBFSearchStartIsTargetIt() {
+        DirectedGraph.DGPath path = europe.breadthFirstSearchIterative("HU","HU");
+        assertNotNull(path);
+        assertEquals(europe.getVertexById("HU"), path.getStart());
+        assertEquals(0, path.getEdges().size());
+        assertEquals(1, path.getVisited().size());
+    }
+
+    @Test
+    void checkBFSearchUnconnectedIt() {
+        DirectedGraph.DGPath path = europe.breadthFirstSearchIterative("UK","HU");
+        assertNull(path);
+    }
+
+    @Test
+    void checkBFSRouteIt() {
+        DirectedGraph.DGPath path = europe.breadthFirstSearchIterative("UK", "LUX");
+        Country UK = europe.getVertexById("UK");
+        Country FR = europe.getVertexById("FR");
+        Country LUX = europe.getVertexById("LUX");
+
+        Border uk_fr = UK.getEdges().stream().filter(e -> e.getTo().equals(FR)).findFirst().get();
+        Border fr_lux = FR.getEdges().stream().filter(e -> e.getTo().equals(LUX)).findFirst().get();
+
+        assertEquals(path.getEdges().get(0), uk_fr, "First part of the path");
+        assertEquals(path.getEdges().get(1), fr_lux, "Second part of the path");
     }
 
     @Test
@@ -160,6 +264,20 @@ class DirectedGraphTest {
     }
 
     @Test
+    void checkDSPSearchRoute() {
+        DirectedGraph.DGPath path = europe.dijkstraShortestPath("UK", "LUX", e -> 2.0);
+        Country UK = europe.getVertexById("UK");
+        Country BE = europe.getVertexById("BE");
+        Country LUX = europe.getVertexById("LUX");
+
+        Border uk_be = UK.getEdges().stream().filter(e -> e.getTo().equals(BE)).findFirst().get();
+        Border be_lux = BE.getEdges().stream().filter(e -> e.getTo().equals(LUX)).findFirst().get();
+
+        assertEquals(path.getEdges().get(0), uk_be, "First part of the path");
+        assertEquals(path.getEdges().get(1), be_lux, "Second part of the path");
+    }
+
+    @Test
     void checkASSearch() {
         DirectedGraph.DGPath path = europe.aStarShortestPath("UK", "LUX", b -> 3.0, (v1,v2) -> 3.0);
         assertNotNull(path);
@@ -183,6 +301,20 @@ class DirectedGraphTest {
     void checkASSearchUnconnected() {
         DirectedGraph.DGPath path = europe.aStarShortestPath("UK", "HU", b -> 3.0, (v1,v2) -> 3.0);
         assertNull(path);
+    }
+
+    @Test
+    void checkASSearchRoute() {
+        DirectedGraph.DGPath path = europe.aStarShortestPath("UK", "LUX", e -> 2.0, (e, i) -> 2.0);
+        Country UK = europe.getVertexById("UK");
+        Country BE = europe.getVertexById("BE");
+        Country LUX = europe.getVertexById("LUX");
+
+        Border uk_be = UK.getEdges().stream().filter(e -> e.getTo().equals(BE)).findFirst().get();
+        Border be_lux = BE.getEdges().stream().filter(e -> e.getTo().equals(LUX)).findFirst().get();
+
+        assertEquals(path.getEdges().get(0), uk_be, "First part of the path");
+        assertEquals(path.getEdges().get(1), be_lux, "Second part of the path");
     }
 
     @Test

@@ -1,5 +1,7 @@
 package graphs;
 
+import route_planner.Road;
+
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.function.BiFunction;
@@ -8,7 +10,7 @@ import java.util.stream.Collectors;
 
 public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
 
-    private Map<String,V> vertices = new HashMap<>();
+    private final Map<String,V> vertices = new HashMap<>();
 
     /** representation invariants:
      1.  all vertices in the graph are unique by their implementation of the getId() method
@@ -76,13 +78,14 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
      *          been added to the graph yet have the same id as another vertex in the graph
      */
     public E addOrGetEdge(E newEdge) {
-        if (vertices.get(newEdge.getFrom().getId()) == null) {
-            addOrGetVertex(newEdge.getFrom());
-        }
-        if (vertices.get(newEdge.getTo().getId()) == null) {
-            addOrGetVertex(newEdge.getTo());
-        }
-        for (DGVertex<E> v : vertices.values()) {
+        //add the vertices from the edge if the do not already exists
+        addOrGetVertex(newEdge.getFrom());
+        addOrGetVertex(newEdge.getTo());
+
+        //loop through all values of the vertices
+        for (V v : vertices.values()) {
+            //check if the vertices from and to are of the same instance as in the vertices map
+            //if that is not the case throw an IllegalArgumentException that there is a duplicate
             if (v.getId().equals(newEdge.getFrom().getId()) && System.identityHashCode(v) != System.identityHashCode(newEdge.getFrom())) {
                 throw new IllegalArgumentException("Duplicate found");
             }
@@ -90,18 +93,15 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
                 throw new IllegalArgumentException("Duplicate found");
             }
         }
-//        if (
-//                vertices.values().stream()
-//                        .filter(e -> e.getId().equals(newEdge.getFrom().getId()))
-//                        .anyMatch(e -> System.identityHashCode(e) != System.identityHashCode(newEdge.getFrom()))
-//                        || vertices.values().stream()
-//                                .filter(e -> e.getId().equals(newEdge.getTo().getId()))
-//                        .anyMatch(e -> System.identityHashCode(e) != System.identityHashCode(newEdge.getTo())))
-//            throw new IllegalArgumentException("Duplicate found!, please use that instance!");
+        //create a shortcode for the edges of the vertex that the edge is coming form
         Set<E> edges = vertices.get(newEdge.getFrom().getId()).getEdges();
-        if (!edges.isEmpty() && edges.stream().filter(e -> e.getFrom().getId().equals(newEdge.getFrom().getId())).anyMatch(e -> e.getTo().getId().equals(newEdge.getTo().getId()))) {
-            return edges.stream().filter(e -> e.getFrom().getId().equals(newEdge.getFrom().getId())).filter(e -> e.getTo().getId().equals(newEdge.getTo().getId())).findFirst().orElse(newEdge);
+        //check if the edges set is not empty and
+        //check if one of those edges is equals to the edge that wants to be added
+        if (!edges.isEmpty() && edges.stream().anyMatch(e -> e.equals(newEdge))) {
+            //return the edge that was already in the graph
+            return edges.stream().filter(e -> e.equals(newEdge)).findFirst().orElse(newEdge);
         }
+        //add the edge to the graph
         edges.add(newEdge);
         // a proper edge shall be returned at all times
         return newEdge;
@@ -218,7 +218,7 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
         if (start == target) return path;
 
         if (dfsRecursionHelperMethod(start, target, path)) {
-//            path.totalWeight = path.getEdges().size();
+            path.totalWeight = path.getEdges().size();
             return path;
         }
 
@@ -253,6 +253,96 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
     }
 
     /**
+     * Depth First Search algorithm, but instead of a recursive solutions, a iterative solution
+     * @param startId
+     * @param targetId
+     * @return the path that needs to be taken
+     */
+    public DGPath depthFirstSearchIterative(String startId, String targetId) {
+
+        V start = this.getVertexById(startId);
+        V target = this.getVertexById(targetId);
+        if (start == null || target == null) return null;
+
+        DGPath path = new DGPath();
+        path.start = start;
+        path.visited.add(start);
+
+        //create a node to keep track of the current node
+        V current;
+
+        //create a stack to save the nodes to
+        Stack<V> nodes = new Stack<>();
+
+        //create a map to keep track of the parents of all nodes Map<V (node), V (parent)>
+        Map<V, V> parentList = new HashMap<>();
+
+        // easy target
+        if (start == target) return path;
+
+        //add the starting node to the stack
+        nodes.push(start);
+
+        //keep going as long as the stack is not empty
+        while (!nodes.empty()) {
+            //remove and get the first node of the stack
+            current = nodes.pop();
+
+            //check if the node is equals to the target node,
+            //if this is the case force stop the loop
+            if (current.equals(target)) break;
+
+            //add the current node to the visited nodes list
+            path.visited.add(current);
+
+            //loop through all the edges of this node
+            for (E e : current.getEdges()) {
+                //create a shortcode for the destination node
+                V v = e.getTo();
+                //check if the destination node is already visited
+                if (!path.visited.contains(v)) {
+                    //add the child node (Key) and the parent node (Value) to the parentList map
+                    parentList.put(v, current);
+                    //add the node to the stack
+                    nodes.push(v);
+                    //set the node in the visited list
+                    path.visited.add(v);
+                    //if that node is equals to the target node force break out of the loop
+                    if (v.equals(target)) break;
+                }
+            }
+        }
+
+        //set the current node equals to the target node
+        current = target;
+
+        //loop as long that the current node is not equals to null
+        while (current != null) {
+            //create a copy of the instance of current
+            V finalCurrent = current;
+            //replace current with its parent
+            current = parentList.get(current);
+            //check if current is not null
+            //if that is the case stream through all the edges of this node,
+            //filter through the edges that have the finalCurrent node as a destination node
+            //get the first node of the results
+            //if there is a result, add the edge to the front of the edges list
+            if (current != null) current.getEdges().stream().filter(e -> e.getTo().equals(finalCurrent)).findFirst().ifPresent(edge -> path.getEdges().addFirst(edge));
+        }
+
+        //check if the edges list is not empty
+        if (!path.getEdges().isEmpty()) {
+            //set the totalWeight of the path to the size of the edges list
+            path.totalWeight = path.getEdges().size();
+            //return the path
+            return path;
+        }
+
+        // no path found, graph was not connected ???
+        return null;
+    }
+
+    /**
      * Uses a breadth-first search algorithm to find a path from the start vertex to the target vertex in the graph
      * The path.totalWeight should indicate the number of edges in the result path
      * All vertices that are being visited by the search should also be registered in path.visited
@@ -276,7 +366,7 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
         if (start == target) return path;
 
         if (bfsRecursiveHelperMethod(start, target, path)) {
-//            path.totalWeight = path.getEdges().size();
+            path.totalWeight = path.getEdges().size();
             return path;
         }
 
@@ -323,6 +413,97 @@ public class DirectedGraph<V extends DGVertex<E>, E extends DGEdge<V>> {
         }
         //default return false
         return false;
+    }
+
+    /**
+     * Breadth first search algorithm, but iterative
+     * @param startId
+     * @param targetId
+     * @return the path that the route has to be taken
+     */
+    public DGPath breadthFirstSearchIterative(String startId, String targetId) {
+
+        V start = this.getVertexById(startId);
+        V target = this.getVertexById(targetId);
+        if (start == null || target == null) return null;
+
+        DGPath path = new DGPath();
+        path.start = start;
+        path.visited.add(start);
+
+        //add a var to save the current node in
+        V current;
+
+        //create a linked list with all the nodes
+        LinkedList<V> nodes = new LinkedList<>();
+
+        //create a map to save which is the parent
+        Map<V, V> parentMap = new HashMap<>();
+
+        // easy target
+        if (start == target) return path;
+
+        //add the start node to the queue
+        nodes.add(start);
+
+        //loop while the queue is not empty
+        while (!nodes.isEmpty()) {
+            //get and delete the first item of the queue
+            current = nodes.poll();
+
+            //check if the current item is equals to the target
+            //if this is the case, force break out of the loop
+            if (current.equals(target)) break;
+
+            //add the current node to the visited path
+            path.visited.add(current);
+
+            //loop through all of the edges of the current node
+            for (E e: current.getEdges()) {
+                //create a shortcode for the destination node
+                V v = e.getTo();
+                //check if the destination node is already visited
+                if (!path.visited.contains(v)) {
+                    //add the destination node to the parentMap with as key the node and als value the parent node
+                    parentMap.put(v, current);
+                    //add the node to the queue
+                    nodes.add(v);
+                    //add the node to the visited list
+                    path.visited.add(v);
+                    //check if the destination node is equals to the target node
+                    //if this is the case force break out of the loop
+                    if (v.equals(target)) break;
+                }
+            }
+        }
+
+        //set the current node equals to the target node
+        current = target;
+
+        //loop as long as the current node is not equals to null
+        while (current != null) {
+            //create a copy of the instance of the current node
+            V finalCurrent = current;
+            //replace the current var with the parent of the node
+            current = parentMap.get(current);
+            //check if current is not null
+            //if it is not null get a stream of the edges of the parent node
+            //filter those edges, to the edges that have as destination the finalCurrent node
+            //get the first node of the result
+            //if there is a first result, add the edge to the front of the edges list
+            if (current != null) current.getEdges().stream().filter(e -> e.getTo().equals(finalCurrent)).findFirst().ifPresent(edge -> path.getEdges().addFirst(edge));
+        }
+
+        //check if the path has edges (the path has a route)
+        if (!path.getEdges().isEmpty()) {
+            //set the total weight of the path equals to the size of the edges list
+            path.totalWeight = path.getEdges().size();
+            //return the path
+            return path;
+        }
+
+        // no path found, graph was not connected ???
+        return null;
     }
 
     // helper class to register the state of a vertex in dijkstra shortest path algorithm

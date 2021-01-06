@@ -112,6 +112,7 @@ public class Road implements DGEdge<Junction>
 
         Road road = (Road) o;
 
+        if (!name.equals(road.name)) return false;
         if (!from.equals(road.from)) return false;
         return to.equals(road.to);
     }

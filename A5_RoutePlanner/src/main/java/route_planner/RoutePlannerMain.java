@@ -36,7 +36,7 @@ public class RoutePlannerMain {
         // find the fastest route avoiding the accident
         DirectedGraph.DGPath path =
                 roadMap.dijkstraShortestPathByAStar(FROM_ID, TO_ID,
-                        e -> e.getLength() * e.getMaxSpeed()
+                        e -> e.getMaxSpeed() / e.getLength()
                 );
         System.out.println("DijkstraByAStar-accident-Weesp: " + path);
         roadMap.svgDrawMap(String.format("DSPACC-%s-%s.svg", FROM_ID, TO_ID), path);
@@ -84,8 +84,8 @@ public class RoutePlannerMain {
 
         // find the routes by A* Shortest Path with minimum total travel time
         path = roadMap.aStarShortestPath(fromId, toId,
-                e -> e.getLength() * e.getMaxSpeed(),
-                (e, i) -> Math.sqrt(Math.pow(e.getLocationX() - i.getLocationX(), 2) + Math.pow(e.getLocationY() - i.getLocationY(), 2)) * 120
+                e -> e.getMaxSpeed() / e.getLength(),
+                (e, i) -> Math.sqrt(Math.pow(e.getLocationX() - i.getLocationX(), 2) + Math.pow(e.getLocationY() - i.getLocationY(), 2)) / 120
         );
         System.out.println("AStar-Fastest-Route: " + path);
         roadMap.svgDrawMap(String.format("ASFR-%s-%s.svg", fromId, toId), path);
